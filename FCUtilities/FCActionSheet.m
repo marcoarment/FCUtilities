@@ -24,7 +24,7 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:FCActionSheetDismissAllNotification object:nil];
 }
 
-- (id)initWithTitle:(NSString *)title
+- (instancetype)initWithTitle:(NSString *)title
 {
 	if ( (self = [super initWithTitle:title delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil]) ) {
 		self.otherButtonBlocks = [NSMutableArray array];
