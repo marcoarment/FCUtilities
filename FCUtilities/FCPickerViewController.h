@@ -7,7 +7,7 @@
 
 @interface FCPickerViewController : UITableViewController
 
-- (id)initWithTitle:(NSString *)title items:(NSArray *)items itemLabelBlock:(NSString *(^)(id item))itemLabelBlock pickedBlock:(void (^)(NSUInteger idx))pickedBlock currentSelection:(NSUInteger)currentSelection;
+- (instancetype)initWithTitle:(NSString *)title items:(NSArray *)items itemLabelBlock:(NSString *(^)(id item))itemLabelBlock pickedBlock:(void (^)(NSUInteger idx))pickedBlock currentSelection:(NSUInteger)currentSelection;
 
 // Subclasses may override these to e.g. customize appearance or register a different cell class
 - (void)configureTableView:(UITableView *)tableView withCellReuseIdentifier:(NSString *)cellReuseIdentifier;

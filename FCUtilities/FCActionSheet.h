@@ -9,7 +9,7 @@ typedef void (^FCActionSheetBlock)(void);
 
 @interface FCActionSheet : UIActionSheet <UIActionSheetDelegate>
 
-- (id)initWithTitle:(NSString *)title;
+- (instancetype)initWithTitle:(NSString *)title;
 - (void)setDismissedAction:(FCActionSheetBlock)block;
 - (void)addButtonWithTitle:(NSString *)title action:(FCActionSheetBlock)block;
 - (void)addCancelButtonWithAction:(FCActionSheetBlock)block;
