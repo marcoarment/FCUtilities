@@ -68,6 +68,7 @@ static FCDeviceCPUClass fcCPUClass;
         return (fcModelHumanIdentifier = @"iPad");
     } else {
         if ([mid isEqualToString:@"iPhone3,1"])  { fcCPUClass = FCDeviceCPUClassA4; return (fcModelHumanIdentifier = @"iPhone 4"); }
+        if ([mid isEqualToString:@"iPhone3,2"])  { fcCPUClass = FCDeviceCPUClassA4; return (fcModelHumanIdentifier = @"iPhone 4"); }
         if ([mid isEqualToString:@"iPhone3,3"])  { fcCPUClass = FCDeviceCPUClassA4; return (fcModelHumanIdentifier = @"iPhone 4 CDMA"); }
 
         if ([mid isEqualToString:@"iPhone4,1"])  { fcCPUClass = FCDeviceCPUClassA5; return (fcModelHumanIdentifier = @"iPhone 4S"); }
