@@ -14,8 +14,6 @@
 - (NSString *)fc_substringBefore:(NSString *)needle fromEnd:(BOOL)reverse;
 - (NSString *)fc_substringBetween:(NSString *)leftCap and:(NSString *)rightCap;
 
-- (BOOL)fc_startsWith:(NSString *)needle;
-- (BOOL)fc_endsWith:(NSString *)needle;
 - (NSString *)fc_trimSubstringFromStart:(NSString *)needle;
 - (NSString *)fc_trimSubstringFromEnd:(NSString *)needle;
 - (NSString *)fc_trimSubstringFromBothEnds:(NSString *)needle;

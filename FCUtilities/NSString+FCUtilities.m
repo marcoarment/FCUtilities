@@ -70,29 +70,11 @@
 	return ([self rangeOfString:needle].location != NSNotFound);
 }
 
-- (BOOL)fc_startsWith:(NSString *)needle
-{
-	if (! needle) return NO;
-	NSInteger mylen = [self length], nlen = [needle length];
-	if (nlen > mylen) return NO;
-	if (nlen == mylen) return [self isEqualToString:needle];
-	return [[self substringToIndex:nlen] isEqualToString:needle];
-}
-
-- (BOOL)fc_endsWith:(NSString *)needle
-{
-	if (! needle) return NO;
-	NSInteger mylen = [self length], nlen = [needle length];
-	if (nlen > mylen) return NO;
-	if (nlen == mylen) return [self isEqualToString:needle];
-	return [[self substringFromIndex:(mylen - nlen)] isEqualToString:needle];
-}
-
 - (NSString *)fc_trimSubstringFromStart:(NSString *)needle
 {
 	NSInteger nlen = [needle length];
 	NSString *ret = self;
-	while ([ret fc_startsWith:needle]) ret = [ret substringFromIndex:nlen];
+	while ([ret hasPrefix:needle]) ret = [ret substringFromIndex:nlen];
 	return ret;
 }
 
@@ -100,7 +82,7 @@
 {
 	NSInteger nlen = [needle length];
 	NSString *ret = self;
-	while ([ret fc_endsWith:needle]) ret = [ret substringToIndex:([ret length] - nlen)];
+	while ([ret hasSuffix:needle]) ret = [ret substringToIndex:([ret length] - nlen)];
 	return ret;
 }
 
