@@ -36,5 +36,7 @@ inline __attribute__((always_inline)) NSString *fc_dictionaryValueToString(NSObj
 // If we're currently on the main thread, run block() sync, otherwise dispatch block() sync to main thread.
 inline __attribute__((always_inline)) void fc_executeOnMainThread(void (^block)())
 {
-    if ([NSThread isMainThread]) block(); else dispatch_sync(dispatch_get_main_queue(), block);
+    if (block) {
+        if ([NSThread isMainThread]) block(); else dispatch_sync(dispatch_get_main_queue(), block);
+    }
 }
