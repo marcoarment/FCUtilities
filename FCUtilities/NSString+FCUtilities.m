@@ -115,4 +115,12 @@
     return stringBuffer;
 }
 
++ (NSString*)fc_NewGuidString
+{
+    NSUUID  *UUID = [NSUUID UUID];
+    NSString* stringUUID = [UUID UUIDString];
+    
+    return stringUUID;
+}
+
 @end
