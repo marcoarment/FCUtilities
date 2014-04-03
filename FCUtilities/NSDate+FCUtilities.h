@@ -10,4 +10,5 @@
 @interface NSDate (FCUtilities)
 
 +(NSDate *)fc_dateWithDotNetJSONString:(NSString *)string;
+-(NSString*)fc_DateString;
 @end

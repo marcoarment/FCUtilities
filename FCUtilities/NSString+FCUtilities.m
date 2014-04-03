@@ -120,7 +120,7 @@
     NSUUID  *UUID = [NSUUID UUID];
     NSString* stringUUID = [UUID UUIDString];
     
-    return stringUUID;
+    return [stringUUID lowercaseString];
 }
 
 @end

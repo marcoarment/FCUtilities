@@ -32,4 +32,15 @@
     return nil;
 }
 
+-(NSString*)fc_DateString
+{
+    
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS"];
+    
+    NSString *dateStr = [dateFormat stringFromDate:self];
+    
+    return dateStr;
+}
+
 @end
