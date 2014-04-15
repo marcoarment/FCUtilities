@@ -10,10 +10,7 @@
 
 - (NSString *)fc_URLEncodedString
 {
-	CFStringRef cs = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef) self, NULL, CFSTR("?=&+:;@/$!'()\",*"), kCFStringEncodingUTF8);
-	NSString *str = [NSString stringWithString:(__bridge NSString *) cs];
-	CFRelease(cs);
-	return str;
+    return [self stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 }
 
 - (NSString *)fc_HTMLEncodedString
