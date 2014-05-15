@@ -11,4 +11,7 @@
 - (instancetype)initWithContentView:(UIView *)contentView;
 - (void)presentInView:(UIView *)view;
 
+- (void)presentInView:(UIView *)view extraAnimations:(void (^)())animations extraDismissAnimations:(void (^)())dismissAnimations;
+
+
 @end

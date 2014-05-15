@@ -16,6 +16,7 @@
 @property (nonatomic) UIToolbar *blurToolbar;
 @property (nonatomic) CALayer *blurLayer;
 @property (nonatomic) UIView *blurView;
+@property (nonatomic, copy) void (^dismissAnimations)();
 @end
 
 @implementation FCSheetView
@@ -63,6 +64,8 @@
         _contentContainer.frame = contentFrame;
         self.backgroundColor = [UIColor clearColor];
         self.window.tintColor = self.tintColor;
+        
+        if (self.dismissAnimations) self.dismissAnimations();
     } completion:^(BOOL finished) {
         [self removeFromSuperview];
     }];
@@ -70,7 +73,14 @@
 
 - (void)presentInView:(UIView *)view
 {
+    [self presentInView:view extraAnimations:nil extraDismissAnimations:nil];
+}
+
+- (void)presentInView:(UIView *)view extraAnimations:(void (^)())animations extraDismissAnimations:(void (^)())dismissAnimations
+{
     if (! view.window) [[NSException exceptionWithName:NSInvalidArgumentException reason:@"FCSheetView host view must be in a window" userInfo:nil] raise];
+    
+    self.dismissAnimations = dismissAnimations;
 
     CGRect masterFrame = view.window.bounds;
     self.frame = masterFrame;
@@ -100,6 +110,8 @@
                 *saturation *= 0.1f;
                 *brightness = 0.667f;
             }];
+
+            if (animations) animations();
         }
         completion:^(BOOL finished) {
         }
