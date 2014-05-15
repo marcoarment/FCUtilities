@@ -10,7 +10,12 @@
 
 - (NSString *)fc_URLEncodedString
 {
-    return [self stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    static NSMutableCharacterSet *allowedCharacters = nil;
+    if (! allowedCharacters) {
+        allowedCharacters = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+        [allowedCharacters removeCharactersInString:@"?=&"];
+    }
+    return [self stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
 }
 
 - (NSString *)fc_HTMLEncodedString
