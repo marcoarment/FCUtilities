@@ -13,7 +13,7 @@
     static NSMutableCharacterSet *allowedCharacters = nil;
     if (! allowedCharacters) {
         allowedCharacters = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
-        [allowedCharacters removeCharactersInString:@"?=&"];
+        [allowedCharacters removeCharactersInString:@"?=&+:;@/$!'()\",*"];
     }
     return [self stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
 }
