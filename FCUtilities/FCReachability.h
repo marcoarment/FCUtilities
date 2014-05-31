@@ -5,6 +5,7 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString * const FCReachabilityStatusChangedNotification;
 extern NSString * const FCReachabilityOfflineNotification;
 extern NSString * const FCReachabilityOnlineNotification;
 extern NSString * const FCReachabilityCellularPolicyChangedNotification;

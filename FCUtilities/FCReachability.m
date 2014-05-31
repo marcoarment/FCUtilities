@@ -7,6 +7,7 @@
 #import "FCReachability.h"
 @import SystemConfiguration;
 
+NSString * const FCReachabilityStatusChangedNotification = @"FCReachabilityStatusChangedNotification";
 NSString * const FCReachabilityOnlineNotification = @"FCReachabilityStatusOnlineNotification";
 NSString * const FCReachabilityOfflineNotification = @"FCReachabilityStatusOfflineNotification";
 NSString * const FCReachabilityCellularPolicyChangedNotification = @"FCReachabilityStatusCellularPolicyChangedNotification";
@@ -74,6 +75,8 @@ static void FCReachabilityChanged(SCNetworkReachabilityRef target, SCNetworkReac
             isOnline = NO;
             [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOfflineNotification object:self];
         }
+        
+        [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityStatusChangedNotification object:self];
     });
 }
 
