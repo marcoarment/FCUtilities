@@ -56,19 +56,32 @@
     return self;
 }
 
+- (void)dismissAnimated:(BOOL)animated completion:(void (^)())completionBlock
+{
+    if (animated) {
+        [UIView animateWithDuration:kSlideOutAnimationDuration animations:^{
+            CGRect contentFrame = _contentContainer.bounds;
+            contentFrame.origin.y = self.bounds.size.height;
+            _contentContainer.frame = contentFrame;
+            self.backgroundColor = [UIColor clearColor];
+            self.window.tintColor = self.tintColor;
+            
+            if (self.dismissAnimations) self.dismissAnimations();
+        } completion:^(BOOL finished) {
+            [self removeFromSuperview];
+            if (self.dismissAction) self.dismissAction();
+            if (completionBlock) completionBlock();
+        }];
+    } else {
+        [self removeFromSuperview];
+        if (self.dismissAction) self.dismissAction();
+        if (completionBlock) completionBlock();
+    }
+}
+
 - (void)dismiss
 {
-    [UIView animateWithDuration:kSlideOutAnimationDuration animations:^{
-        CGRect contentFrame = _contentContainer.bounds;
-        contentFrame.origin.y = self.bounds.size.height;
-        _contentContainer.frame = contentFrame;
-        self.backgroundColor = [UIColor clearColor];
-        self.window.tintColor = self.tintColor;
-        
-        if (self.dismissAnimations) self.dismissAnimations();
-    } completion:^(BOOL finished) {
-        [self removeFromSuperview];
-    }];
+    [self dismissAnimated:YES completion:NULL];
 }
 
 - (void)presentInView:(UIView *)view

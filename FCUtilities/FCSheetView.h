@@ -10,8 +10,9 @@
 
 - (instancetype)initWithContentView:(UIView *)contentView;
 - (void)presentInView:(UIView *)view;
-
 - (void)presentInView:(UIView *)view extraAnimations:(void (^)())animations extraDismissAnimations:(void (^)())dismissAnimations;
+- (void)dismissAnimated:(BOOL)animated completion:(void (^)())completionBlock;
 
+@property (nonatomic, copy) void (^dismissAction)();
 
 @end
