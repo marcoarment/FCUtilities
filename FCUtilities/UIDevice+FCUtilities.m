@@ -100,4 +100,11 @@ static FCDeviceRadioType fcRadioType;
     }
 }
 
+- (long long)fc_freeDiskSpaceInBytes
+{
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfFileSystemForPath:NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0] error:NULL];
+    NSNumber *freeSpace;
+    return attributes && (freeSpace = attributes[NSFileSystemFreeSize]) ? freeSpace.longLongValue : -1;
+}
+
 @end
