@@ -24,6 +24,7 @@
 - (instancetype)initWithContentView:(UIView *)contentView
 {
     if ( (self = [super init]) ) {
+        self.accessibilityViewIsModal = YES;
 
         CGRect contentContainerFrame = contentView.bounds;
         contentContainerFrame.size.height += kExtraHeightForBottomOverlap;
@@ -69,11 +70,13 @@
             if (self.dismissAnimations) self.dismissAnimations();
         } completion:^(BOOL finished) {
             [self removeFromSuperview];
+            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
             if (self.dismissAction) self.dismissAction();
             if (completionBlock) completionBlock();
         }];
     } else {
         [self removeFromSuperview];
+        UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
         if (self.dismissAction) self.dismissAction();
         if (completionBlock) completionBlock();
     }
@@ -82,6 +85,12 @@
 - (void)dismiss
 {
     [self dismissAnimated:YES completion:NULL];
+}
+
+- (BOOL)accessibilityPerformEscape
+{
+    [self dismiss];
+    return YES;
 }
 
 - (void)presentInView:(UIView *)view
@@ -103,6 +112,7 @@
     dismissFrame.size.height = masterFrame.size.height - (_contentContainer.bounds.size.height - kExtraHeightForBottomOverlap);
     
     self.dismissButton.frame = dismissFrame;
+    self.dismissButton.accessibilityLabel = NSLocalizedString(@"Back", @"FCSheetView dismiss-button accessibility label");
     [self addSubview:self.dismissButton];
     
     __block CGRect contentFrame = masterFrame;
@@ -127,6 +137,7 @@
             if (animations) animations();
         }
         completion:^(BOOL finished) {
+            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
         }
     ];
 }
