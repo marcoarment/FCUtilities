@@ -8,7 +8,8 @@
 #define kExtraHeightForBottomOverlap  40
 
 #import "FCSheetView.h"
-#import "UIColor+FCUtilities.h"
+
+#define FCSheetViewForceDismissNotification @"FCSheetViewForceDismissNotification"
 
 @interface FCSheetView ()
 @property (nonatomic) UIButton *dismissButton;
@@ -17,13 +18,20 @@
 @property (nonatomic) CALayer *blurLayer;
 @property (nonatomic) UIView *blurView;
 @property (nonatomic, copy) void (^dismissAnimations)();
+@property (nonatomic) BOOL presented;
 @end
 
 @implementation FCSheetView
 
++ (void)dismissAllAnimated:(BOOL)animated
+{
+    [NSNotificationCenter.defaultCenter postNotificationName:FCSheetViewForceDismissNotification object:@(animated)];
+}
+
 - (instancetype)initWithContentView:(UIView *)contentView
 {
     if ( (self = [super init]) ) {
+        self.presented = NO;
         self.accessibilityViewIsModal = YES;
 
         CGRect contentContainerFrame = contentView.bounds;
@@ -53,8 +61,20 @@
         self.backgroundColor = [UIColor clearColor];
         self.dismissButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [self.dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchDown];
+        
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(dismissByNotification:) name:FCSheetViewForceDismissNotification object:nil];
     }
     return self;
+}
+
+- (void)dealloc
+{
+    [NSNotificationCenter.defaultCenter removeObserver:self name:FCSheetViewForceDismissNotification object:nil];
+}
+
+- (void)dismissByNotification:(NSNotification *)n
+{
+    if (self.presented) [self dismissAnimated:((NSNumber *) n.object).boolValue completion:NULL];
 }
 
 - (void)dismissAnimated:(BOOL)animated completion:(void (^)())completionBlock
@@ -65,7 +85,6 @@
             contentFrame.origin.y = self.bounds.size.height;
             _contentContainer.frame = contentFrame;
             self.backgroundColor = [UIColor clearColor];
-            self.window.tintColor = self.tintColor;
             
             if (self.dismissAnimations) self.dismissAnimations();
         } completion:^(BOOL finished) {
@@ -95,6 +114,7 @@
 
 - (void)presentInView:(UIView *)view
 {
+    self.presented = YES;
     [self presentInView:view extraAnimations:nil extraDismissAnimations:nil];
 }
 
@@ -102,6 +122,7 @@
 {
     if (! view.window) [[NSException exceptionWithName:NSInvalidArgumentException reason:@"FCSheetView host view must be in a window" userInfo:nil] raise];
     
+    self.presented = YES;
     self.dismissAnimations = dismissAnimations;
 
     CGRect masterFrame = view.window.bounds;
@@ -129,11 +150,6 @@
             contentFrame.origin.y = masterFrame.size.height - (_contentContainer.bounds.size.height - kExtraHeightForBottomOverlap);
             _contentContainer.frame = contentFrame;
             self.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.25f];
-            view.window.tintColor = [view.window.tintColor fc_colorByModifyingHSBA:^(CGFloat *hue, CGFloat *saturation, CGFloat *brightness, CGFloat *alpha) {
-                *saturation *= 0.1f;
-                *brightness = 0.667f;
-            }];
-
             if (animations) animations();
         }
         completion:^(BOOL finished) {

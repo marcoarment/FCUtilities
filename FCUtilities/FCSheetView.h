@@ -13,6 +13,8 @@
 - (void)presentInView:(UIView *)view extraAnimations:(void (^)())animations extraDismissAnimations:(void (^)())dismissAnimations;
 - (void)dismissAnimated:(BOOL)animated completion:(void (^)())completionBlock;
 
++ (void)dismissAllAnimated:(BOOL)animated;
+
 @property (nonatomic, copy) void (^dismissAction)();
 
 @end
