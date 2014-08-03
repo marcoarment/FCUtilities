@@ -9,6 +9,13 @@
 
 @implementation NSData (FCUtilities)
 
++ (NSData *)fc_randomDataWithLength:(NSUInteger)length
+{
+    NSMutableData *data = [NSMutableData dataWithLength:length];
+    if (0 != SecRandomCopyBytes(kSecRandomDefault, length, (uint8_t *) data.mutableBytes)) return nil;
+    return [data copy];
+}
+
 - (NSString *)fc_stringValue
 {
     return [[NSString alloc] initWithBytes:[self bytes] length:[self length] encoding:NSUTF8StringEncoding];

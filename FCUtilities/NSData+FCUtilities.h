@@ -10,6 +10,7 @@
 
 @interface NSData (FCUtilities)
 
++ (NSData *)fc_randomDataWithLength:(NSUInteger)length;
 - (NSData *)fc_deflatedData;
 - (NSData *)fc_inflatedDataWithHeader:(BOOL)headerPresent; // pass NO for raw deflate data without a gzip header, such as PHP's gzdeflate() output
 - (NSData *)fc_MD5Digest;
