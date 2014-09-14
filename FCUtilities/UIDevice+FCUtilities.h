@@ -16,6 +16,7 @@ typedef NS_ENUM(NSInteger, FCDeviceCPUClass) {
     FCDeviceCPUClassA5,
     FCDeviceCPUClassA6,
     FCDeviceCPUClassA7,
+    FCDeviceCPUClassA8,
     FCDeviceCPUClassUnknown
 };
 
@@ -38,6 +39,5 @@ typedef NS_ENUM(NSInteger, FCDeviceRadioType) {
 - (BOOL)fc_systemVersionIsAtLeast:(NSString *)versionString; // e.g. "7.0" or "7.0.4"
 - (NSString *)fc_modelIdentifier;      // e.g. "iPhone5,1"
 - (NSString *)fc_modelHumanIdentifier; // e.g. "iPhone 4S"
-- (long long)fc_freeDiskSpaceInBytes;
 
 @end
