@@ -71,7 +71,8 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
 
             CGRect linkRect = CGRectFromString([result substringToIndex:firstSpaceIndex]);
             NSURL *url = [NSURL URLWithString:[result substringFromIndex:firstSpaceIndex + 1]];
-            if (! url) return;
+            NSSet *permittedSchemes = [NSSet setWithObjects:@"http", @"https", nil];
+            if (! url || ! url.scheme || ! [permittedSchemes containsObject:url.scheme.lowercaseString]) return;
 
             linkRect.origin.x *= scale;
             linkRect.origin.y *= scale;
@@ -91,10 +92,24 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
             });
 
             UIActivityViewController *avc = [[UIActivityViewController alloc] initWithActivityItems:@[ url ] applicationActivities:@[ [[FCOpenInSafariActivity alloc] init] ]];
-            avc.popoverPresentationController.sourceView = targetWebView;
-            avc.popoverPresentationController.sourceRect = linkRect;
-            avc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
-            [self.viewController presentViewController:avc animated:YES completion:nil];
+            
+            UIPopoverPresentationController *existingPPC = self.viewController.popoverPresentationController;
+            if (existingPPC && (existingPPC.sourceView || existingPPC.barButtonItem)) {
+                avc.popoverPresentationController.sourceView = existingPPC.sourceView;
+                avc.popoverPresentationController.barButtonItem = existingPPC.barButtonItem;
+                avc.popoverPresentationController.sourceRect = existingPPC.sourceRect;
+                avc.popoverPresentationController.permittedArrowDirections = existingPPC.permittedArrowDirections;
+                UIViewController *presentingVC = self.viewController.presentingViewController;
+            
+                [presentingVC dismissViewControllerAnimated:NO completion:^{
+                    [presentingVC presentViewController:avc animated:YES completion:nil];
+                }];
+            } else {
+                avc.popoverPresentationController.sourceView = targetWebView;
+                avc.popoverPresentationController.sourceRect = linkRect;
+                avc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
+                [self.viewController presentViewController:avc animated:YES completion:nil];
+            }
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 for (UIGestureRecognizer *g in disabledGestureRecognizers) g.enabled = YES;
