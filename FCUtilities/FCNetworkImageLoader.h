@@ -8,6 +8,7 @@
 @interface FCNetworkImageLoader : NSOperationQueue
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder;
++ (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy;
 
 + (void)cancelLoadForImageView:(UIImageView *)imageView;
 
