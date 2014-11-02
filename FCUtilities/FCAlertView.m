@@ -26,10 +26,7 @@
     return self;
 }
 
-- (void)dealloc
-{
-    [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
-}
+- (void)dealloc { [NSNotificationCenter.defaultCenter removeObserver:self]; }
 
 - (void)addButtonWithTitle:(NSString *)title action:(FCAlertViewBlock)block
 {

@@ -67,10 +67,7 @@
     return self;
 }
 
-- (void)dealloc
-{
-    [NSNotificationCenter.defaultCenter removeObserver:self name:FCSheetViewForceDismissNotification object:nil];
-}
+- (void)dealloc { [NSNotificationCenter.defaultCenter removeObserver:self]; }
 
 - (void)dismissByNotification:(NSNotification *)n
 {
