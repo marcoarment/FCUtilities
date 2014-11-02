@@ -33,16 +33,17 @@ static void FCReachabilityChanged(SCNetworkReachabilityRef target, SCNetworkReac
         (flags & kSCNetworkReachabilityFlagsIsWWAN ? FCReachabilityStatusOnlineViaCellular : FCReachabilityStatusOnlineViaWiFi) :
         FCReachabilityStatusOffline
     ;
+    // NSLog(@"[reachability] %@, %@", (flags & kSCNetworkReachabilityFlagsReachable) ? @"reachable" : @"offline", (flags & kSCNetworkReachabilityFlagsIsWWAN) ? @"cellular" : @"wi-fi");
     [fcr update];
 }
 
 
 @implementation FCReachability
 
-- (instancetype)initWithHostname:(NSString *)hostname allowCellular:(BOOL)allowCellular;
+- (instancetype)initWithHostname:(NSString *)hostname allowCellular:(BOOL)allowCellular
 {
     if ( (self = [super init]) ) {
-        isOnline = YES;
+        isOnline = NO;
         requireWiFi = ! allowCellular;
         [self setReachabilityHostname:hostname];
     }
