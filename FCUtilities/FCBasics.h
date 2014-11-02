@@ -22,8 +22,9 @@
 #define is_ipad()   (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 #define is_iphone() (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 
-#define APP_DISPLAY_NAME    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]
-#define APP_VERSION     	[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]
+#define APP_DISPLAY_NAME    [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleDisplayName"]
+#define APP_VERSION     	[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]
+#define APP_BUILD_NUMBER    [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"]
 
 inline __attribute__((always_inline)) NSString *fc_safeString(NSString *str) { return str ? str : @""; }
 
