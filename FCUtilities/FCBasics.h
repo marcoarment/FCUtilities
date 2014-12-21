@@ -19,9 +19,6 @@
 #define user_defaults_set_array(key, a)  { [[NSUserDefaults standardUserDefaults] setObject:a  forKey:key]; [[NSUserDefaults standardUserDefaults] synchronize]; }
 #define user_defaults_set_object(key, o) { [[NSUserDefaults standardUserDefaults] setObject:o  forKey:key]; [[NSUserDefaults standardUserDefaults] synchronize]; }
 
-#define is_ipad()   (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-#define is_iphone() (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-
 #define APP_DISPLAY_NAME    [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleDisplayName"]
 #define APP_VERSION     	[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]
 #define APP_BUILD_NUMBER    [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"]
@@ -39,5 +36,13 @@ inline __attribute__((always_inline)) void fc_executeOnMainThread(void (^block)(
 {
     if (block) {
         if ([NSThread isMainThread]) block(); else dispatch_sync(dispatch_get_main_queue(), block);
+    }
+}
+
+// If we're currently on the main thread, run block() **sync**, otherwise dispatch block() **ASYNC** to main thread.
+inline __attribute__((always_inline)) void fc_executeOnMainThreadAsync(void (^block)())
+{
+    if (block) {
+        if ([NSThread isMainThread]) block(); else dispatch_async(dispatch_get_main_queue(), block);
     }
 }
