@@ -5,6 +5,8 @@
 
 #import <UIKit/UIKit.h>
 
+FOUNDATION_EXPORT NSString *const FCActivityTypeOpenInChrome;
+
 @interface FCOpenInChromeActivity : UIActivity
 
 - (instancetype)initWithSourceName:(NSString *)xCallbackSource successCallbackURL:(NSURL *)xCallbackURL;
