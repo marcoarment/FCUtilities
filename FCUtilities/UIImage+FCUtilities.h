@@ -22,13 +22,13 @@
 
 + (UIImage *)fc_stretchableImageWithSolidColor:(UIColor *)solidColor;
 + (UIImage *)fc_solidColorImageWithSize:(CGSize)size color:(UIColor *)solidColor;
-
++ (UIImage *)fc_solidColorImageWithSize:(CGSize)size scale:(CGFloat)scale color:(UIColor *)solidColor;
 
 // Basic effects
 
 - (UIImage *)fc_desaturatedImage;
 - (UIImage *)fc_tintedImageUsingColor:(UIColor *)tintColor;
-
+- (UIImage *)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius;
 
 // Creation of new images (or annotation of existing ones) by using Quartz drawing commands:
 

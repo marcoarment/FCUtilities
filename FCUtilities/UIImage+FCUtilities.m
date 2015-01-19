@@ -18,6 +18,17 @@
     return [drawnImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
 }
 
++ (UIImage *)fc_solidColorImageWithSize:(CGSize)size scale:(CGFloat)scale color:(UIColor *)solidColor
+{
+    UIGraphicsBeginImageContextWithOptions(size, YES, scale);
+    CGRect drawRect = CGRectMake(0, 0, size.width, size.height);
+    [solidColor set];
+    UIRectFill(drawRect);
+    UIImage *drawnImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return drawnImage;
+}
+
 + (UIImage *)fc_solidColorImageWithSize:(CGSize)size color:(UIColor *)solidColor
 {
     UIGraphicsBeginImageContext(size);
@@ -90,5 +101,21 @@
     UIGraphicsEndImageContext();
     return finalImage;
 }
+
+- (UIImage *)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius
+{
+    CGRect rect = CGRectMake(0, 0, self.size.width, self.size.height);
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, self.scale);
+//    CGContextRef c = UIGraphicsGetCurrentContext();
+    [[UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:cornerRadius] addClip];
+    [self drawInRect:rect];
+//    CGContextSetFillColorWithColor(c, [color CGColor]);
+//    CGContextSetBlendMode(c, kCGBlendModeSourceAtop);
+//    CGContextFillRect(c, rect);
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+	return result;
+}
+
 
 @end
