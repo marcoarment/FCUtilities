@@ -4,6 +4,7 @@
 //
 
 #import "FCNetworkImageLoader.h"
+#import "FCCache.h"
 
 // If we're currently on the main thread, run block() sync, otherwise dispatch block() sync to main thread.
 static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOnMainThread(void (^block)())
@@ -14,7 +15,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 }
 
 @interface FCNetworkImageLoader ()
-@property (nonatomic) NSCache *imageCache;
+@property (nonatomic) FCCache *imageCache;
 @property (nonatomic) NSMapTable *imageToOperationMapTable;
 + (instancetype)sharedInstance;
 @end
@@ -142,12 +143,16 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     if ( (self = [super init]) ) {
         self.name = @"FCNetworkImageLoader";
         self.maxConcurrentOperationCount = 3;
-        self.imageCache = [[NSCache alloc] init];
+        self.imageCache = [[FCCache alloc] init];
         self.imageToOperationMapTable = [NSMapTable weakToWeakObjectsMapTable];
     }
     return self;
 }
 
++ (void)setCachedImageLimit:(NSUInteger)imageCount
+{
+    ((FCNetworkImageLoader *) [self sharedInstance]).imageCache.itemLimit = imageCount;
+}
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder
 {
