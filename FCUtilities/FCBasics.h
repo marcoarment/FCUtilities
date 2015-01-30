@@ -46,3 +46,15 @@ inline __attribute__((always_inline)) void fc_executeOnMainThreadAsync(void (^bl
         if ([NSThread isMainThread]) block(); else dispatch_async(dispatch_get_main_queue(), block);
     }
 }
+
+
+inline __attribute((always_inline)) uint64_t fc_random_int64()
+{
+    uint64_t urandom;
+    if (0 != SecRandomCopyBytes(kSecRandomDefault, sizeof(uint64_t), (uint8_t *) (&urandom))) {
+        arc4random_stir();
+        urandom = ( ((uint64_t) arc4random()) << 32) | (uint64_t) arc4random();
+    }
+    return urandom;
+}
+
