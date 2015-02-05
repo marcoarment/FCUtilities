@@ -17,6 +17,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 @interface FCNetworkImageLoader ()
 @property (nonatomic) FCCache *imageCache;
 @property (nonatomic) NSMapTable *imageToOperationMapTable;
+@property (nonatomic, copy) BOOL (^cellularPolicyHandler)();
 + (instancetype)sharedInstance;
 @end
 
@@ -114,7 +115,9 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     if (! imageViewStillExists || self.isCancelled) return;
     imageViewStillExists = nil;
 
-    NSURLRequest *req = [NSURLRequest requestWithURL:self.URL cachePolicy:_cachePolicy timeoutInterval:30];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:self.URL cachePolicy:_cachePolicy timeoutInterval:30];
+    BOOL (^cellularHandler)() = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
+    if (cellularHandler) req.allowsCellularAccess = cellularHandler();
 
     [self willChangeValueForKey:@"isExecuting"];
     self.connection = [NSURLConnection connectionWithRequest:req delegate:self];
@@ -136,6 +139,11 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{ instance = [[self alloc] init]; });
     return instance;
+}
+
++ (void)setCellularPolicyHandler:(BOOL (^)())returnIsCellularAllowed
+{
+    FCNetworkImageLoader.sharedInstance.cellularPolicyHandler = returnIsCellularAllowed;
 }
 
 - (instancetype)init
