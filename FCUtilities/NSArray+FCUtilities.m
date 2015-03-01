@@ -12,6 +12,13 @@
     return [self objectsAtIndexes:[self indexesOfObjectsPassingTest:keepBlock]];
 }
 
+- (NSArray *)fc_arrayWithCorrespondingObjectsFromBlock:(id (^)(id obj))newObjectFromObjectBlock
+{
+    NSMutableArray *outArray = [NSMutableArray arrayWithCapacity:self.count];
+    for (id obj in self) [outArray addObject:newObjectFromObjectBlock(obj)];
+    return outArray;
+}
+
 @end
 
 
