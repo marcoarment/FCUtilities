@@ -4,6 +4,9 @@
 //
 
 #import "FCCache.h"
+#ifdef TARGET_OS_IPHONE
+@import UIKit;
+#endif
 
 @interface FCCache () {
     NSUInteger limit;
@@ -18,7 +21,9 @@
 {
     if ( (self = [super init]) ) {
         self.backingStore = [NSMutableDictionary dictionary];
+#ifdef TARGET_OS_IPHONE
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(removeAllObjects) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+#endif
         self.queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
