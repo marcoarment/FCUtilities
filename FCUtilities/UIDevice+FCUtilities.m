@@ -68,9 +68,18 @@ static FCDeviceRadioType fcRadioType;
 
         if ([mid isEqualToString:@"iPad4,1"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad Air"); }
         if ([mid isEqualToString:@"iPad4,2"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Air"); }
+        if ([mid isEqualToString:@"iPad4,3"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Air"); } // China
 
-        if ([mid isEqualToString:@"iPad4,4"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"Retina iPad Mini"); }
-        if ([mid isEqualToString:@"iPad4,5"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"Retina iPad Mini"); }
+        if ([mid isEqualToString:@"iPad4,4"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad Mini 2"); }
+        if ([mid isEqualToString:@"iPad4,5"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Mini 2"); }
+        if ([mid isEqualToString:@"iPad4,6"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Mini 2"); } // China
+
+        if ([mid isEqualToString:@"iPad4,7"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad Mini 3"); }
+        if ([mid isEqualToString:@"iPad4,8"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Mini 3"); }
+        if ([mid isEqualToString:@"iPad4,9"]) { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Mini 3"); } // China
+
+        if ([mid isEqualToString:@"iPad5,3"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad Air 2"); }
+        if ([mid isEqualToString:@"iPad5,4"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Air 2"); }
         
         fcCPUClass = FCDeviceCPUClassUnknown;
         fcRadioType = FCDeviceRadioTypeUnknown;
@@ -93,7 +102,9 @@ static FCDeviceRadioType fcRadioType;
         if ([mid isEqualToString:@"iPhone6,2"])  { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 5s"); }
 
         if ([mid isEqualToString:@"iPhone7,1"])  { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6 Plus"); }
+        if ([mid isEqualToString:@"iPhone7,2*"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6 Plus"); } // China
         if ([mid isEqualToString:@"iPhone7,2"])  { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6"); }
+        if ([mid isEqualToString:@"iPhone7,2*"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6"); } // China
 
         if ([mid isEqualToString:@"iPod5,1"])    { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPod 5G"); }
         if ([mid isEqualToString:@"iPod7,1"])    { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPod 6G"); }
