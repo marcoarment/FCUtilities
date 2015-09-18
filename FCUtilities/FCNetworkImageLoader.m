@@ -14,122 +14,13 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     }
 }
 
-@interface FCNetworkImageLoader ()
+@interface FCNetworkImageLoader () <NSURLSessionDataDelegate>
 @property (nonatomic) FCCache *imageCache;
-@property (nonatomic) NSMapTable *imageToOperationMapTable;
+@property (nonatomic) NSMapTable *imageToSessionTaskMapTable;
+@property (nonatomic) NSURLSession *session;
 @property (nonatomic, copy) BOOL (^cellularPolicyHandler)();
 + (instancetype)sharedInstance;
 @end
-
-
-@interface FCNetworkImageLoadOperation : NSOperation <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
-@property (nonatomic) BOOL didStart;
-@property (nonatomic, copy) NSURL *URL;
-@property (nonatomic, weak) UIImageView *weakImageView;
-@property (nonatomic) NSURLRequestCachePolicy cachePolicy;
-@property (nonatomic) NSMutableData *responseData;
-@property (nonatomic) NSURLConnection *connection;
-@end
-
-@implementation FCNetworkImageLoadOperation
-
-+ (void)delegateThreadMain:(id)ignored
-{
-    // thanks to AFNetworking for this thread/runloop approach
-    @autoreleasepool {
-        NSThread.currentThread.name = @"FCNetworkImageLoader";
-        NSRunLoop *runLoop = NSRunLoop.currentRunLoop;
-        [runLoop addPort:NSMachPort.port forMode:NSDefaultRunLoopMode];
-        [runLoop run];
-    }
-}
-
-+ (NSThread *)delegateThread
-{
-    static NSThread *thread;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        thread = [[NSThread alloc] initWithTarget:self selector:@selector(delegateThreadMain:) object:nil];
-        [thread start];
-    });
-    return thread;
-}
-
-- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse
-{
-    // Force all responses to be cacheable
-    return [[NSCachedURLResponse alloc] initWithResponse:cachedResponse.response data:cachedResponse.data userInfo:cachedResponse.userInfo storagePolicy:NSURLCacheStorageAllowed];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response { self.responseData = [NSMutableData data]; }
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data { [self.responseData appendData:data]; }
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error { [self cleanup]; }
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-    if (! self.responseData || self.isCancelled) { [self cleanup]; return; }
-
-    __strong UIImageView *imageView = self.weakImageView;
-    if (! imageView) { [self cleanup]; return; }
-
-    UIImage *image = [UIImage imageWithData:self.responseData scale:UIScreen.mainScreen.scale];
-    if (! image) { [self cleanup]; return; }
-    
-    [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:self.URL.absoluteString];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (! self.isCancelled) imageView.image = image;
-    });
-
-    [self cleanup];
-}
-
-- (void)cleanup
-{
-    [self willChangeValueForKey:@"isFinished"];
-    [self willChangeValueForKey:@"isExecuting"];
-    self.connection = nil;
-    [self didChangeValueForKey:@"isExecuting"];
-    [self didChangeValueForKey:@"isFinished"];
-}
-
-- (BOOL)isConcurrent { return YES; }
-- (BOOL)isExecuting  { return _didStart && _connection; }
-- (BOOL)isFinished   { return _didStart && ! _connection; }
-- (void)cancel       { [self.connection cancel]; [self cleanup]; }
-
-- (void)start
-{
-    NSThread *delegateThread = self.class.delegateThread;
-    if (NSThread.currentThread != delegateThread) {
-        [self performSelector:@selector(start) onThread:delegateThread withObject:nil waitUntilDone:NO];
-        return;
-    }
-
-    if (self.isCancelled) {
-        _didStart = YES;
-        [self cleanup];
-        return;
-    }
-
-    __strong UIImageView *imageViewStillExists = self.weakImageView;
-    if (! imageViewStillExists || self.isCancelled) return;
-    imageViewStillExists = nil;
-
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:self.URL cachePolicy:_cachePolicy timeoutInterval:30];
-    BOOL (^cellularHandler)() = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
-    if (cellularHandler) req.allowsCellularAccess = cellularHandler();
-
-    [self willChangeValueForKey:@"isExecuting"];
-    self.connection = [NSURLConnection connectionWithRequest:req delegate:self];
-    self.didStart = YES;
-    [self didChangeValueForKey:@"isExecuting"];
-
-    [self.connection scheduleInRunLoop:NSRunLoop.currentRunLoop forMode:NSDefaultRunLoopMode];
-    [self.connection start];
-}
-
-@end
-
 
 @implementation FCNetworkImageLoader
 
@@ -152,9 +43,20 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
         self.name = @"FCNetworkImageLoader";
         self.maxConcurrentOperationCount = 3;
         self.imageCache = [[FCCache alloc] init];
-        self.imageToOperationMapTable = [NSMapTable weakToWeakObjectsMapTable];
+        self.imageToSessionTaskMapTable = [NSMapTable weakToWeakObjectsMapTable];
+        self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:self];
     }
     return self;
+}
+
+- (void)URLSession:(NSURLSession * _Nonnull)session dataTask:(NSURLSessionDataTask * _Nonnull)dataTask willCacheResponse:(NSCachedURLResponse * _Nonnull)proposedResponse completionHandler:(void (^ _Nonnull)(NSCachedURLResponse * _Nullable cachedResponse))completionHandler
+{
+    // Force all valid responses to be cacheable
+    NSInteger httpStatus = ((NSHTTPURLResponse *)proposedResponse.response).statusCode;
+    if (httpStatus >= 200 && httpStatus < 300) {
+        proposedResponse = [[NSCachedURLResponse alloc] initWithResponse:proposedResponse.response data:proposedResponse.data userInfo:proposedResponse.userInfo storagePolicy:NSURLCacheStorageAllowed];
+    }
+    completionHandler(proposedResponse);
 }
 
 + (void)setCachedImageLimit:(NSUInteger)imageCount
@@ -177,24 +79,37 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 
     if (placeholder) FCNetworkImageLoader_executeOnMainThread(^{ imageView.image = placeholder; });
 
-    FCNetworkImageLoadOperation *existingOperation = [FCNetworkImageLoader.sharedInstance.imageToOperationMapTable objectForKey:imageView];
-    if (existingOperation) {
-        if ([existingOperation.URL.absoluteString isEqualToString:url.absoluteString]) return;
-        else [existingOperation cancel];
+    NSURLSessionTask *existingTask = [FCNetworkImageLoader.sharedInstance.imageToSessionTaskMapTable objectForKey:imageView];
+    if (existingTask) {
+        if ([existingTask.originalRequest.URL.absoluteString isEqualToString:url.absoluteString]) return;
+        else [existingTask cancel];
     }
-    
-    FCNetworkImageLoadOperation *operation = [[FCNetworkImageLoadOperation alloc] init];
-    operation.URL = url;
-    operation.cachePolicy = cachePolicy;
-    operation.weakImageView = imageView;
-    [self.sharedInstance addOperation:operation];
-    [FCNetworkImageLoader.sharedInstance.imageToOperationMapTable setObject:operation forKey:imageView];
+
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url cachePolicy:cachePolicy timeoutInterval:30];
+    BOOL (^cellularHandler)() = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
+    if (cellularHandler) req.allowsCellularAccess = cellularHandler();
+
+    __weak UIImageView *weakImageView = imageView;
+    NSURLSessionDataTask *task = [FCNetworkImageLoader.sharedInstance.session dataTaskWithRequest:req completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        __strong UIImageView *strongImageView = weakImageView;
+        UIImage *image = nil;
+        if (! strongImageView || ! data || ! response || error || ! (image = [UIImage imageWithData:data scale:UIScreen.mainScreen.scale]) ) return;
+
+        [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:url.absoluteString];
+
+        FCNetworkImageLoader_executeOnMainThread(^{
+            __strong UIImageView *strongInnerImageView = weakImageView;
+            if (strongInnerImageView) strongInnerImageView.image = image;
+        });
+    }];
+    [FCNetworkImageLoader.sharedInstance.imageToSessionTaskMapTable setObject:task forKey:imageView];
+    [task resume];
 }
 
 + (void)cancelLoadForImageView:(UIImageView *)imageView
 {
-    FCNetworkImageLoadOperation *loadOperationForImageView = [FCNetworkImageLoader.sharedInstance.imageToOperationMapTable objectForKey:imageView];
-    if (loadOperationForImageView) [loadOperationForImageView cancel];
+    NSURLSessionTask *existingTask = [FCNetworkImageLoader.sharedInstance.imageToSessionTaskMapTable objectForKey:imageView];
+    if (existingTask) [existingTask cancel];
 }
 
 @end

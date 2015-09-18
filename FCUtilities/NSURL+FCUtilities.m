@@ -17,13 +17,13 @@
     
     NSMutableDictionary *decoded = [NSMutableDictionary dictionary];
     for (NSString *pair in [query componentsSeparatedByString:@"&"]) {
-        NSArray *parts = [pair componentsSeparatedByString:@"="];
+        NSArray<NSString *> *parts = [pair componentsSeparatedByString:@"="];
         if (! parts.count || ! [parts.firstObject length]) continue;
         
         if (parts.count == 1) {
-            decoded[([parts[0] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding])] = @"";
+            decoded[parts[0].stringByRemovingPercentEncoding] = @"";
         } else if (parts.count == 2) {
-            decoded[([parts[0] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding])] = [parts[1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            decoded[parts[0].stringByRemovingPercentEncoding] = parts[1].stringByRemovingPercentEncoding;
         }
     }
 
