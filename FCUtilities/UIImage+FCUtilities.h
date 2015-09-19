@@ -8,6 +8,8 @@
 
 @interface UIImage (FCUtilities)
 
+- (void)fc_enumeratePixelsUsingBlock:(void (^ _Nonnull)(NSUInteger x, NSUInteger y, UInt8 r, UInt8 g, UInt8 b, UInt8 a))callback;
+- (float)fc_similarityToImageOfSameSize:(UIImage * _Nonnull)otherImage;
 
 // Masked images are resource images that you provide in black (or any color) on a transparent background.
 // Only their transparency values are used -- they're effectively just masks.
@@ -15,24 +17,24 @@
 // On load, you can make the opaque portions of the source image any color you want.
 // Useful when declaring your interface colors programatically or supporting multiple color schemes.
 
-+ (UIImage *)fc_maskedImageNamed:(NSString *)name color:(UIColor *)color;
++ (UIImage * _Nullable)fc_maskedImageNamed:(NSString * _Nonnull)name color:(UIColor * _Nonnull)color;
 
 
 // Convenience methods for using solid colors where UIKit wants images
 
-+ (UIImage *)fc_stretchableImageWithSolidColor:(UIColor *)solidColor;
-+ (UIImage *)fc_solidColorImageWithSize:(CGSize)size color:(UIColor *)solidColor;
-+ (UIImage *)fc_solidColorImageWithSize:(CGSize)size scale:(CGFloat)scale color:(UIColor *)solidColor;
++ (UIImage * _Nonnull)fc_stretchableImageWithSolidColor:(UIColor * _Nonnull)solidColor;
++ (UIImage * _Nonnull)fc_solidColorImageWithSize:(CGSize)size color:(UIColor * _Nonnull)solidColor;
++ (UIImage * _Nonnull)fc_solidColorImageWithSize:(CGSize)size scale:(CGFloat)scale color:(UIColor * _Nonnull)solidColor;
 
 // Basic effects
 
-- (UIImage *)fc_desaturatedImage;
-- (UIImage *)fc_tintedImageUsingColor:(UIColor *)tintColor;
-- (UIImage *)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius;
+- (UIImage * _Nonnull)fc_desaturatedImage;
+- (UIImage * _Nonnull)fc_tintedImageUsingColor:(UIColor * _Nonnull)tintColor;
+- (UIImage * _Nonnull)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius;
 
 // Creation of new images (or annotation of existing ones) by using Quartz drawing commands:
 
-+ (UIImage *)fc_imageWithSize:(CGSize)size drawing:(void (^)())drawingCommands;
-- (UIImage *)fc_imageWithAdditionalDrawing:(void (^)())drawingCommands;
++ (UIImage * _Nonnull)fc_imageWithSize:(CGSize)size drawing:(void (^ _Nonnull)())drawingCommands;
+- (UIImage * _Nonnull)fc_imageWithAdditionalDrawing:(void (^ _Nonnull)())drawingCommands;
 
 @end
