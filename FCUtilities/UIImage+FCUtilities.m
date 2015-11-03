@@ -7,6 +7,7 @@
 
 @implementation UIImage (FCUtilities)
 
+#ifndef TARGET_OS_TV
 + (UIImage *)fc_stretchableImageWithSolidColor:(UIColor *)solidColor
 {
     UIGraphicsBeginImageContext(CGSizeMake(1, 1));
@@ -17,6 +18,7 @@
     UIGraphicsEndImageContext();
     return [drawnImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
 }
+#endif
 
 + (UIImage *)fc_solidColorImageWithSize:(CGSize)size scale:(CGFloat)scale color:(UIColor *)solidColor
 {

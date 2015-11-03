@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+@import UIKit;
 
 @interface FCNetworkImageLoader : NSOperationQueue
 
