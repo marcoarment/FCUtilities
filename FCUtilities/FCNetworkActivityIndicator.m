@@ -5,6 +5,15 @@
 
 #import "FCNetworkActivityIndicator.h"
 
+#if TARGET_OS_TV
+
+@implementation FCNetworkActivityIndicator
++ (void)incrementActivityCount { }
++ (void)decrementActivityCount { }
+@end
+
+#else
+
 static int activityCount = 0;
 
 @implementation FCNetworkActivityIndicator
@@ -30,3 +39,6 @@ static int activityCount = 0;
 }
 
 @end
+
+#endif
+
