@@ -22,7 +22,7 @@
 
 // Convenience methods for using solid colors where UIKit wants images
 
-#ifndef TARGET_OS_TV
+#if ! TARGET_OS_TV
 + (UIImage * _Nonnull)fc_stretchableImageWithSolidColor:(UIColor * _Nonnull)solidColor;
 #endif
 + (UIImage * _Nonnull)fc_solidColorImageWithSize:(CGSize)size color:(UIColor * _Nonnull)solidColor;

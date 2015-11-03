@@ -7,7 +7,7 @@
 
 @implementation UIImage (FCUtilities)
 
-#ifndef TARGET_OS_TV
+#if ! TARGET_OS_TV
 + (UIImage *)fc_stretchableImageWithSolidColor:(UIColor *)solidColor
 {
     UIGraphicsBeginImageContext(CGSizeMake(1, 1));
