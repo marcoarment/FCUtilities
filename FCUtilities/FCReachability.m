@@ -21,6 +21,7 @@ NSString * const FCReachabilityCellularPolicyChangedNotification = @"FCReachabil
 - (void)update;
 
 @property (nonatomic) SCNetworkReachabilityFlags reachabilityFlags;
+@property (nonatomic) FCReachabilityStatus previousStatus;
 @property (nonatomic) FCReachabilityStatus status;
 @end
 
@@ -28,6 +29,7 @@ NSString * const FCReachabilityCellularPolicyChangedNotification = @"FCReachabil
 static void FCReachabilityChanged(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
 {
     FCReachability *fcr = (__bridge FCReachability *) info;
+    fcr.previousStatus = fcr.status;
     fcr.status =
         (flags & kSCNetworkReachabilityFlagsReachable) ?
         (flags & kSCNetworkReachabilityFlagsIsWWAN ? FCReachabilityStatusOnlineViaCellular : FCReachabilityStatusOnlineViaWiFi) :
@@ -71,10 +73,10 @@ static void FCReachabilityChanged(SCNetworkReachabilityRef target, SCNetworkReac
         
         if (nowOnline && ! isOnline) {
             isOnline = YES;
-            [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOnlineNotification object:self];
+            if (_previousStatus != FCReachabilityStatusUnknown) [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOnlineNotification object:self];
         } else if (! nowOnline && isOnline) {
             isOnline = NO;
-            [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOfflineNotification object:self];
+            if (_previousStatus != FCReachabilityStatusUnknown) [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOfflineNotification object:self];
         }
         
         [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityStatusChangedNotification object:self];

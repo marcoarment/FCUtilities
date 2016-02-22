@@ -11,7 +11,8 @@ extern NSString * const FCReachabilityOnlineNotification;
 extern NSString * const FCReachabilityCellularPolicyChangedNotification;
 
 typedef NS_ENUM(NSInteger, FCReachabilityStatus) {
-    FCReachabilityStatusOffline = 0,
+    FCReachabilityStatusUnknown = 0,
+    FCReachabilityStatusOffline,
     FCReachabilityStatusOnlineViaCellular,
     FCReachabilityStatusOnlineViaWiFi
 };
