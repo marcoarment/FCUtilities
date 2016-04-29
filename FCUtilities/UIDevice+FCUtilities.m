@@ -102,7 +102,7 @@ static FCDeviceRadioType fcRadioType;
         if ([mid isEqualToString:@"iPhone6,2"])  { fcCPUClass = FCDeviceCPUClassA7; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 5s"); }
 
         if ([mid isEqualToString:@"iPhone7,1"])  { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6 Plus"); }
-        if ([mid isEqualToString:@"iPhone7,2*"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6 Plus"); } // China
+        if ([mid isEqualToString:@"iPhone7,1*"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6 Plus"); } // China
         if ([mid isEqualToString:@"iPhone7,2"])  { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6"); }
         if ([mid isEqualToString:@"iPhone7,2*"]) { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 6"); } // China
 
