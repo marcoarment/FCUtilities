@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, FCDeviceCPUClass) {
     FCDeviceCPUClassA6,
     FCDeviceCPUClassA7,
     FCDeviceCPUClassA8,
+    FCDeviceCPUClassA9,
     FCDeviceCPUClassUnknown
 };
 
