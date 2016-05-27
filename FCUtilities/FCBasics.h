@@ -58,3 +58,13 @@ inline __attribute((always_inline)) uint64_t fc_random_int64()
     return urandom;
 }
 
+inline __attribute((always_inline)) uint32_t fc_random_int32()
+{
+    uint32_t urandom;
+    if (0 != SecRandomCopyBytes(kSecRandomDefault, sizeof(uint32_t), (uint8_t *) (&urandom))) {
+        arc4random_stir();
+        urandom = (uint32_t) arc4random();
+    }
+    return urandom;
+}
+
