@@ -31,22 +31,8 @@ inline __attribute__((always_inline)) NSString *fc_dictionaryValueToString(NSObj
     else return [(NSNumber *)cfObj stringValue];
 }
 
-// If we're currently on the main thread, run block() sync, otherwise dispatch block() sync to main thread.
-inline __attribute__((always_inline)) void fc_executeOnMainThread(void (^block)())
-{
-    if (block) {
-        if ([NSThread isMainThread]) block(); else dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
-
-// If we're currently on the main thread, run block() **sync**, otherwise dispatch block() **ASYNC** to main thread.
-inline __attribute__((always_inline)) void fc_executeOnMainThreadAsync(void (^block)())
-{
-    if (block) {
-        if ([NSThread isMainThread]) block(); else dispatch_async(dispatch_get_main_queue(), block);
-    }
-}
-
+// If we're currently on the main thread, run block() sync, otherwise dispatch block() async to main thread.
+void fc_executeOnMainThread(void (^block)());
 
 inline __attribute((always_inline)) uint64_t fc_random_int64()
 {
@@ -57,4 +43,15 @@ inline __attribute((always_inline)) uint64_t fc_random_int64()
     }
     return urandom;
 }
+
+inline __attribute((always_inline)) uint32_t fc_random_int32()
+{
+    uint32_t urandom;
+    if (0 != SecRandomCopyBytes(kSecRandomDefault, sizeof(uint32_t), (uint8_t *) (&urandom))) {
+        arc4random_stir();
+        urandom = (uint32_t) arc4random();
+    }
+    return urandom;
+}
+
 
