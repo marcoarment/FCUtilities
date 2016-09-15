@@ -21,7 +21,7 @@
 {
     if ( (self = [super init]) ) {
         self.backingStore = [NSMutableDictionary dictionary];
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE && ! TARGET_OS_WATCH
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(removeAllObjects) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 #endif
         self.queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
