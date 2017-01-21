@@ -47,7 +47,12 @@ NSString *const FCActivityTypeOpenInSafari = @"FCActivityTypeOpenInSafari";
     self.URL = URL ?: stringURL;
 }
 
-- (void)performActivity { [self activityDidFinish:[UIApplication.sharedApplication openURL:self.URL]]; }
+- (void)performActivity
+{
+    [UIApplication.sharedApplication openURL:self.URL options:@{} completionHandler:^(BOOL success) {
+        [self activityDidFinish:success];
+    }];
+}
 
 + (UIImage *)alphaSafariIconWithWidth:(CGFloat)width scale:(CGFloat)scale
 {
