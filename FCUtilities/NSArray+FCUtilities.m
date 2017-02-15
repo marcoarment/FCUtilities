@@ -19,6 +19,12 @@
     return outArray;
 }
 
+- (id)fc_randomObject
+{
+    if (! self.count) return nil;
+    return self[arc4random_uniform((uint32_t) self.count)];
+}
+
 @end
 
 
