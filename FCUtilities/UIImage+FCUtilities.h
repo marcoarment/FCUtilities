@@ -18,6 +18,7 @@
 // Useful when declaring your interface colors programatically or supporting multiple color schemes.
 
 + (UIImage * _Nullable)fc_maskedImageNamed:(NSString * _Nonnull)name color:(UIColor * _Nonnull)color;
+- (UIImage * _Nullable)fc_maskedImageWithColor:(UIColor * _Nonnull)color;
 
 
 // Convenience methods for using solid colors where UIKit wants images

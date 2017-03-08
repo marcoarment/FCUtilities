@@ -4,19 +4,23 @@
 //
 
 #import "FCExtensionPipe.h"
+#include <notify.h>
 
-// thanks http://stackoverflow.com/questions/7017281/performselector-may-cause-a-leak-because-its-selector-is-unknown
-#define SUPPRESS_PERFORM_SELECTOR_LEAK_WARNING(code)                        \
-    _Pragma("clang diagnostic push")                                        \
-    _Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"")     \
-    code;                                                                   \
-    _Pragma("clang diagnostic pop")                                         \
-
-
-@interface FCExtensionPipe () {
-    dispatch_source_t source;
-    dispatch_queue_t queue;
+static void notificationCenterCallback(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+{
+    FCExtensionPipe *instance = (__bridge FCExtensionPipe *) observer;
+    if (instance && [instance isKindOfClass:FCExtensionPipe.class]) {
+        __strong id target = instance.target;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [target performSelector:instance.action withObject:instance.lastMessage];
+#pragma clang diagnostic pop
+    }
 }
+
+
+@interface FCExtensionPipe ()
+@property (nonatomic) NSString *filename;
 @end
 
 @implementation FCExtensionPipe
@@ -24,38 +28,22 @@
 - (instancetype)initWithAppGroupIdentifier:(NSString *)appGroupID remotePipeIdentifier:(NSString *)remotePipeID target:(__weak id)target action:(SEL)actionTakingNSDictionary
 {
     if ( (self = [super init]) ) {
-        NSString *filename = [self.class filenameForAppGroupIdentifier:appGroupID sourceIdentifier:remotePipeID];
-
-        if (! [NSFileManager.defaultManager fileExistsAtPath:filename]) {
-            if (! [NSFileManager.defaultManager createFileAtPath:filename contents:NSData.data attributes:nil]) {
-                [[[NSException alloc] initWithName:NSGenericException reason:@"Cannot write initial file to App Group container" userInfo:nil] raise];
-            }
-        }
+        self.target = target;
+        self.action = actionTakingNSDictionary;
+        self.filename = [self.class filenameForAppGroupIdentifier:appGroupID sourceIdentifier:remotePipeID];
         
-        queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_SERIAL);
-        const char *fsp = filename.fileSystemRepresentation;
-        int fd = open(fsp, O_EVTONLY);
-        source = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE, fd, DISPATCH_VNODE_WRITE, queue);
-        dispatch_source_set_cancel_handler(source, ^{ close(fd); });
-
-        dispatch_source_set_event_handler(source, ^{
-            __strong id strongTarget = target;
-            NSDictionary *message = [NSDictionary dictionaryWithContentsOfFile:filename];
-            
-            if (strongTarget && message) dispatch_async(dispatch_get_main_queue(), ^{
-                SUPPRESS_PERFORM_SELECTOR_LEAK_WARNING([strongTarget performSelector:actionTakingNSDictionary withObject:message]);
-            });
-        });
-
-        dispatch_resume(source);
+        CFStringRef cfStrID = (__bridge CFStringRef) [NSString stringWithFormat:@"%@.%@", appGroupID, remotePipeID];
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *) self, notificationCenterCallback, cfStrID, NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     return self;
 }
 
 - (void)dealloc
 {
-    dispatch_source_cancel(source);
+    CFNotificationCenterRemoveEveryObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *) self);
 }
+
+- (NSDictionary *)lastMessage { return [NSDictionary dictionaryWithContentsOfFile:self.filename]; }
 
 + (NSString *)filenameForAppGroupIdentifier:(NSString *)appGroupID sourceIdentifier:(NSString *)s
 {
@@ -70,9 +58,13 @@
         [[[NSException alloc] initWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"FCExtensionPipe data error: %@", error.localizedDescription] userInfo:nil] raise];
     }
 
-    if (! [data writeToFile:[self filenameForAppGroupIdentifier:appGroupID sourceIdentifier:pipeID] options:0 error:&error]) {
-        [[[NSException alloc] initWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"FCExtensionPipe write error: %@", error.localizedDescription] userInfo:nil] raise];
+    if (! [data writeToFile:[self filenameForAppGroupIdentifier:appGroupID sourceIdentifier:pipeID] atomically:YES]) {
+        [[[NSException alloc] initWithName:NSInvalidArgumentException reason:@"FCExtensionPipe write error" userInfo:nil] raise];
     }
+
+    CFStringRef cfStrID = (__bridge CFStringRef) [NSString stringWithFormat:@"%@.%@", appGroupID, pipeID];
+    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), cfStrID, NULL, NULL, YES);
 }
 
 @end
+

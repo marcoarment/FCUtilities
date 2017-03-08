@@ -19,4 +19,10 @@
 // Send messages statically. pipeIdentifier must be filename-safe.
 + (void)sendMessageToAppGroupIdentifier:(NSString *)appGroupIdentifier pipeIdentifier:(NSString *)pipeIdentifier userInfo:(NSDictionary *)userInfo;
 
+
+@property (nonatomic, weak) id target;
+@property (nonatomic) SEL action;
+
+@property (nonatomic, readonly) NSDictionary *lastMessage; // For optional conveniences only. Retention not guaranteed.
+
 @end
