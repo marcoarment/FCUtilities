@@ -34,6 +34,7 @@
 - (UIImage * _Nonnull)fc_desaturatedImage;
 - (UIImage * _Nonnull)fc_tintedImageUsingColor:(UIColor * _Nonnull)tintColor;
 - (UIImage * _Nonnull)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius;
+- (UIImage * _Nonnull)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)cornerRadius;
 
 // Creation of new images (or annotation of existing ones) by using Quartz drawing commands:
 

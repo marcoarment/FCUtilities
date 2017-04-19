@@ -122,16 +122,24 @@
 {
     CGRect rect = CGRectMake(0, 0, self.size.width, self.size.height);
     UIGraphicsBeginImageContextWithOptions(rect.size, NO, self.scale);
-//    CGContextRef c = UIGraphicsGetCurrentContext();
     [[UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:cornerRadius] addClip];
     [self drawInRect:rect];
-//    CGContextSetFillColorWithColor(c, [color CGColor]);
-//    CGContextSetBlendMode(c, kCGBlendModeSourceAtop);
-//    CGContextFillRect(c, rect);
     UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 	return result;
 }
+
+- (UIImage *)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)cornerRadius
+{
+    CGRect rect = CGRectMake(0, 0, self.size.width, self.size.height);
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, self.scale);
+    [[UIBezierPath bezierPathWithRoundedRect:rect byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(cornerRadius, cornerRadius)] addClip];
+    [self drawInRect:rect];
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+	return result;
+}
+
 
 - (void)fc_enumeratePixelsUsingBlock:(void (^ _Nonnull)(NSUInteger x, NSUInteger y, UInt8 r, UInt8 g, UInt8 b, UInt8 a))callback
 {
