@@ -61,6 +61,9 @@ static FCDeviceRadioType fcRadioType;
         if ([mid isEqualToString:@"iPad3,4"]) { fcCPUClass = FCDeviceCPUClassA6; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad 4"); }
         if ([mid isEqualToString:@"iPad3,5"]) { fcCPUClass = FCDeviceCPUClassA6; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad 4"); }
         if ([mid isEqualToString:@"iPad3,6"]) { fcCPUClass = FCDeviceCPUClassA6; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad 4"); }
+        
+        if ([mid isEqualToString:@"iPad6,11"]) { fcCPUClass = FCDeviceCPUClassA9; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad 5"); }
+        if ([mid isEqualToString:@"iPad6,12"]) { fcCPUClass = FCDeviceCPUClassA9; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad 5"); }
 
         if ([mid isEqualToString:@"iPad2,5"]) { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad Mini"); }
         if ([mid isEqualToString:@"iPad2,6"]) { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad Mini"); }
