@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "FCBasics.h"
 
-void fc_executeOnMainThread(void (^block)())
+void fc_executeOnMainThread(void (^block)(void))
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

@@ -7,7 +7,7 @@
 #import "FCCache.h"
 
 // If we're currently on the main thread, run block() sync, otherwise dispatch block() sync to main thread.
-static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOnMainThread(void (^block)())
+static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOnMainThread(void (^block)(void))
 {
     if (block) {
         if ([NSThread isMainThread]) block(); else dispatch_sync(dispatch_get_main_queue(), block);
@@ -18,7 +18,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 @property (nonatomic) FCCache *imageCache;
 @property (nonatomic) NSMapTable *imageToSessionTaskMapTable;
 @property (nonatomic) NSURLSession *session;
-@property (nonatomic, copy) BOOL (^cellularPolicyHandler)();
+@property (nonatomic, copy) BOOL (^cellularPolicyHandler)(void);
 + (instancetype)sharedInstance;
 @end
 
@@ -32,7 +32,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     return instance;
 }
 
-+ (void)setCellularPolicyHandler:(BOOL (^)())returnIsCellularAllowed
++ (void)setCellularPolicyHandler:(BOOL (^)(void))returnIsCellularAllowed
 {
     FCNetworkImageLoader.sharedInstance.cellularPolicyHandler = returnIsCellularAllowed;
 }
@@ -86,7 +86,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     }
 
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url cachePolicy:cachePolicy timeoutInterval:30];
-    BOOL (^cellularHandler)() = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
+    BOOL (^cellularHandler)(void) = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
     if (cellularHandler) req.allowsCellularAccess = cellularHandler();
 
     __weak UIImageView *weakImageView = imageView;

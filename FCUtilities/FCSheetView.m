@@ -17,7 +17,7 @@
 @property (nonatomic) UIToolbar *blurToolbar;
 @property (nonatomic) CALayer *blurLayer;
 @property (nonatomic) UIView *blurView;
-@property (nonatomic, copy) void (^dismissAnimations)();
+@property (nonatomic, copy) void (^dismissAnimations)(void);
 @property (nonatomic) BOOL presented;
 @end
 
@@ -74,7 +74,7 @@
     if (self.presented) [self dismissAnimated:((NSNumber *) n.object).boolValue completion:NULL];
 }
 
-- (void)dismissAnimated:(BOOL)animated completion:(void (^)())completionBlock
+- (void)dismissAnimated:(BOOL)animated completion:(void (^)(void))completionBlock
 {
     if (animated) {
         [UIView animateWithDuration:kSlideOutAnimationDuration animations:^{
@@ -115,7 +115,7 @@
     [self presentInView:view extraAnimations:nil extraDismissAnimations:nil];
 }
 
-- (void)presentInView:(UIView *)view extraAnimations:(void (^)())animations extraDismissAnimations:(void (^)())dismissAnimations
+- (void)presentInView:(UIView *)view extraAnimations:(void (^)(void))animations extraDismissAnimations:(void (^)(void))dismissAnimations
 {
     if (! view.window) [[NSException exceptionWithName:NSInvalidArgumentException reason:@"FCSheetView host view must be in a window" userInfo:nil] raise];
     

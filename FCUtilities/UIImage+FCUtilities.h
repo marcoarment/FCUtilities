@@ -38,7 +38,7 @@
 
 // Creation of new images (or annotation of existing ones) by using Quartz drawing commands:
 
-+ (UIImage * _Nonnull)fc_imageWithSize:(CGSize)size drawing:(void (^ _Nonnull)())drawingCommands;
-- (UIImage * _Nonnull)fc_imageWithAdditionalDrawing:(void (^ _Nonnull)())drawingCommands;
++ (UIImage * _Nonnull)fc_imageWithSize:(CGSize)size drawing:(void (^ _Nonnull)(void))drawingCommands;
+- (UIImage * _Nonnull)fc_imageWithAdditionalDrawing:(void (^ _Nonnull)(void))drawingCommands;
 
 @end

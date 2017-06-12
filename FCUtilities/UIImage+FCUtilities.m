@@ -97,7 +97,7 @@
     return [UIImage imageWithCGImage:tintedImage.CGImage scale:self.scale orientation:UIImageOrientationUp];
 }
 
-+ (UIImage *)fc_imageWithSize:(CGSize)size drawing:(void (^)())drawingCommands
++ (UIImage *)fc_imageWithSize:(CGSize)size drawing:(void (^)(void))drawingCommands
 {
     UIGraphicsBeginImageContextWithOptions(size, NO, [UIScreen mainScreen].scale);
     drawingCommands();
@@ -106,7 +106,7 @@
     return finalImage;
 }
 
-- (UIImage *)fc_imageWithAdditionalDrawing:(void (^)())drawingCommands
+- (UIImage *)fc_imageWithAdditionalDrawing:(void (^)(void))drawingCommands
 {
     UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
     CGRect drawRect = CGRectMake(0, 0, self.size.width, self.size.height);

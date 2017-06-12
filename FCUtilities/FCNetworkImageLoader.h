@@ -8,7 +8,7 @@
 
 @interface FCNetworkImageLoader : NSOperationQueue
 
-+ (void)setCellularPolicyHandler:(BOOL (^)())returnIsCellularAllowed;
++ (void)setCellularPolicyHandler:(BOOL (^)(void))returnIsCellularAllowed;
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder;
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy;
