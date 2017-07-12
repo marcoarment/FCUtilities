@@ -1,8 +1,7 @@
 //
 //  FCTwitterAuthorization.m
-//
 //  Created by Marco Arment on 7/11/17.
-//  Copyright © 2017 Marco Arment. All rights reserved.
+//  Part of FCUtilities by Marco Arment. See included LICENSE file for BSD license.
 //
 
 #import "FCTwitterAuthorization.h"
