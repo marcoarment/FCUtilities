@@ -17,6 +17,7 @@
     2. Pass that as callbackURLScheme when using authorizeWithConsumerKey:...
     3. In the app delegate's application:openURL:options:, if the URL scheme matches step 1's, pass it to [FCTwitterAuthorization callbackURLReceived:]
     4. Add the URL scheme "twitterauth" to LSApplicationQueriesSchemes in Info.plist
+    5. Ensure your app's Settings on https://apps.twitter.com/ include a valid web Callback URL (which won't be used in this flow) and Callback Locking is OFF.
 */
 
 @interface FCTwitterAuthorization : NSObject
