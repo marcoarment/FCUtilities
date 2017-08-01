@@ -35,6 +35,8 @@
 - (UIImage * _Nonnull)fc_tintedImageUsingColor:(UIColor * _Nonnull)tintColor;
 - (UIImage * _Nonnull)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius;
 - (UIImage * _Nonnull)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)cornerRadius;
+- (UIImage * _Nonnull)fc_imagePaddedWithColor:(UIColor * _Nonnull)color insets:(UIEdgeInsets)insets;
+
 
 // Creation of new images (or annotation of existing ones) by using Quartz drawing commands:
 

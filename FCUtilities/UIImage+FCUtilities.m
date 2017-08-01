@@ -140,6 +140,23 @@
 	return result;
 }
 
+- (UIImage * _Nonnull)fc_imagePaddedWithColor:(UIColor * _Nonnull)color insets:(UIEdgeInsets)insets
+{
+    // Only ever adds size to the image, doesn't remove it
+    insets.top = ABS(insets.top);
+    insets.bottom = ABS(insets.bottom);
+    insets.left = ABS(insets.left);
+    insets.right = ABS(insets.right);
+    
+    CGSize originalSize = self.size;
+    CGSize newSize = CGSizeMake(originalSize.width + (insets.left + insets.right), originalSize.height + (insets.top + insets.bottom));
+    return [self.class fc_imageWithSize:newSize drawing:^{
+        CGRect entireImageRect = CGRectMake(0, 0, newSize.width, newSize.height);
+        [color setFill];
+        [[UIBezierPath bezierPathWithRect:entireImageRect] fill];
+        [self drawInRect:UIEdgeInsetsInsetRect(entireImageRect, insets)];
+    }];
+}
 
 - (void)fc_enumeratePixelsUsingBlock:(void (^ _Nonnull)(NSUInteger x, NSUInteger y, UInt8 r, UInt8 g, UInt8 b, UInt8 a))callback
 {
