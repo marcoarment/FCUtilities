@@ -143,7 +143,7 @@ static FCTwitterAuthorization *g_currentInstance = NULL;
         
         NSURL *authURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://api.twitter.com/oauth/authenticate?oauth_token=%@", oauth.token]];
         self.authenticationSession = [[SFAuthenticationSession alloc] initWithURL:authURL callbackURLScheme:self.callbackURLScheme completionHandler:^(NSURL * _Nullable callbackURL, NSError * _Nullable e) {
-            if (! callbackURL || e) {
+			if (! callbackURL || e || [callbackURL.absoluteString containsString:@"?denied="]) {
                 [self finishWithCredentials:nil];
                 return;
             }
