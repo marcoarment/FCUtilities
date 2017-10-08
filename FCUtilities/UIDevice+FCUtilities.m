@@ -132,6 +132,13 @@ static FCDeviceRadioType fcRadioType;
         if ([mid isEqualToString:@"iPhone9,3"]) { fcCPUClass = FCDeviceCPUClassA10; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 7"); }
         if ([mid isEqualToString:@"iPhone9,2"]) { fcCPUClass = FCDeviceCPUClassA10; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 7 Plus"); }
         if ([mid isEqualToString:@"iPhone9,4"]) { fcCPUClass = FCDeviceCPUClassA10; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 7 Plus"); }
+        
+        if ([mid isEqualToString:@"iPhone10,1"]) { fcCPUClass = FCDeviceCPUClassA11; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 8"); }
+        if ([mid isEqualToString:@"iPhone10,4"]) { fcCPUClass = FCDeviceCPUClassA11; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 8"); }
+        if ([mid isEqualToString:@"iPhone10,2"]) { fcCPUClass = FCDeviceCPUClassA11; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 8 Plus"); }
+        if ([mid isEqualToString:@"iPhone10,5"]) { fcCPUClass = FCDeviceCPUClassA11; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone 8 Plus"); }
+        if ([mid isEqualToString:@"iPhone10,3"]) { fcCPUClass = FCDeviceCPUClassA11; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone X"); }
+        if ([mid isEqualToString:@"iPhone10,6"]) { fcCPUClass = FCDeviceCPUClassA11; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPhone X"); }
 
         if ([mid isEqualToString:@"iPod5,1"])    { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPod 5G"); }
         if ([mid isEqualToString:@"iPod7,1"])    { fcCPUClass = FCDeviceCPUClassA8; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPod 6G"); }
