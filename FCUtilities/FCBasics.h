@@ -54,4 +54,25 @@ inline __attribute((always_inline)) uint32_t fc_random_int32()
     return urandom;
 }
 
+inline __attribute__((always_inline)) CGRect fc_safeCGRectInset(CGRect rect, CGFloat dx, CGFloat dy)
+{
+    CGFloat dx2 = 2.0f * dx, dy2 = 2.0f * dy;
+    if (rect.size.width < dx2) {
+        rect.origin.x = rect.size.width / 2.0f;
+        rect.size.width = 0;
+    } else {
+        rect.origin.x += dx;
+        rect.size.width -= dx2;
+    }
+    
+    if (rect.size.height < dy2) {
+        rect.origin.y = rect.size.height / 2.0f;
+        rect.size.height = 0;
+    } else {
+        rect.origin.y += dy;
+        rect.size.height -= dy2;
+    }
+    
+    return rect;
+}
 
