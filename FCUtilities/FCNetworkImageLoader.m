@@ -19,7 +19,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 @property (nonatomic) NSMapTable *imageToSessionTaskMapTable;
 @property (nonatomic) NSURLSession *session;
 @property (nonatomic, copy) BOOL (^cellularPolicyHandler)(void);
-@property (nonatomic, copy) UIImage *(^fetchedImageHandler)(UIImage *image);
+@property (nonatomic, copy) NSData *(^fetchedImageDataHandler)(NSData *imageData);
 + (instancetype)sharedInstance;
 @end
 
@@ -38,9 +38,9 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     FCNetworkImageLoader.sharedInstance.cellularPolicyHandler = returnIsCellularAllowed;
 }
 
-+ (void)setFetchedImageHandler:(UIImage * (^)(UIImage *image))block
++ (void)setFetchedImageDataHandler:(NSData * (^)(NSData *imageData))block
 {
-    FCNetworkImageLoader.sharedInstance.fetchedImageHandler = block;
+    FCNetworkImageLoader.sharedInstance.fetchedImageDataHandler = block;
 }
 
 - (instancetype)init
@@ -98,11 +98,12 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     __weak UIImageView *weakImageView = imageView;
     NSURLSessionDataTask *task = [FCNetworkImageLoader.sharedInstance.session dataTaskWithRequest:req completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         __strong UIImageView *strongImageView = weakImageView;
+
+        NSData *(^imageDataHandler)(NSData *image) = FCNetworkImageLoader.sharedInstance.fetchedImageDataHandler;
+        if (imageDataHandler) data = imageDataHandler(data);
+
         UIImage *image = nil;
         if (! strongImageView || ! data || ! response || error || ! (image = [UIImage imageWithData:data scale:UIScreen.mainScreen.scale]) ) return;
-
-        UIImage *(^imageHandler)(UIImage *image) = FCNetworkImageLoader.sharedInstance.fetchedImageHandler;
-        if (imageHandler) image = imageHandler(image);
 
         [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:url.absoluteString];
 
