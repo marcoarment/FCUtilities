@@ -49,6 +49,8 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
 - (void)longPressed:(UILongPressGestureRecognizer *)gr
 {
     if (gr.state == UIGestureRecognizerStateBegan) {
+        if (_viewController.presentedViewController) return;
+        
         UIView *targetWebView = self.uiWebView ? self.uiWebView : self.webView;
         UIScrollView *scrollView = self.uiWebView ? self.uiWebView.scrollView : self.webView.scrollView;
         CGPoint location = [gr locationInView:targetWebView];
