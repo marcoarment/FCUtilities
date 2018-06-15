@@ -5,7 +5,6 @@
 //
 
 #import "FCTwitterAuthorization.h"
-#include <CommonCrypto/CommonHMAC.h>
 
 @interface FCTwitterCredentials ()
 @property (nonatomic) NSString *token;
