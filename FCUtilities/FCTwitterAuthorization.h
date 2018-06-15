@@ -22,6 +22,7 @@
 
 @interface FCTwitterAuthorization : NSObject
 
++ (BOOL)isTwitterAppInstalled;
 + (void)authorizeWithConsumerKey:(NSString *)key consumerSecret:(NSString *)secret callbackURLScheme:(NSString *)scheme completion:(void (^)(FCTwitterCredentials *credentials))completion;
 
 + (void)cancel;
