@@ -13,19 +13,11 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
 }
 
 @interface FCWebViewLongPressActivityMenu () <UIGestureRecognizerDelegate>
-@property (nonatomic, weak) UIWebView *uiWebView;
 @property (nonatomic, weak) WKWebView *webView;
 @property (nonatomic, weak) UIViewController *viewController;
 @end
 
 @implementation FCWebViewLongPressActivityMenu
-
-- (void)attachToUIWebView:(UIWebView *)webView inViewController:(UIViewController *)viewController
-{
-    self.uiWebView = webView;
-    self.viewController = viewController;
-    [self attachGestureRecognizer];
-}
 
 - (void)attachToWebView:(WKWebView *)webView inViewController:(UIViewController *)viewController
 {
@@ -39,7 +31,7 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
     UILongPressGestureRecognizer *lpgr = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
     lpgr.minimumPressDuration *= 0.9;
     lpgr.delegate = self;
-    [(self.webView ?: self.uiWebView) addGestureRecognizer:lpgr];
+    [self.webView addGestureRecognizer:lpgr];
 }
 
 #pragma mark - UIGestureRecognizerDelegate for long-press link interception
@@ -51,12 +43,10 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
     if (gr.state == UIGestureRecognizerStateBegan) {
         if (_viewController.presentedViewController) return;
         
-        UIView *targetWebView = self.uiWebView ? self.uiWebView : self.webView;
-        UIScrollView *scrollView = self.uiWebView ? self.uiWebView.scrollView : self.webView.scrollView;
-        CGPoint location = [gr locationInView:targetWebView];
-        CGFloat scale = scrollView.zoomScale;
-        location.x -= scrollView.contentInset.left;
-        location.y -= scrollView.contentInset.top;
+        CGPoint location = [gr locationInView:self.webView];
+        CGFloat scale = self.webView.scrollView.zoomScale;
+        location.x -= self.webView.scrollView.contentInset.left;
+        location.y -= self.webView.scrollView.contentInset.top;
         location.x /= scale;
         location.y /= scale;
         
@@ -66,7 +56,7 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
             (int) location.x, (int) location.y
         ];
         
-        void (^processJSResult)(NSString *) = ^(NSString *result) {
+        [self.webView evaluateJavaScript:js completionHandler:^(NSString *result, NSError *error) {
             if (! result || ! [result isKindOfClass:NSString.class] || ! result.length) return;
             NSUInteger firstSpaceIndex = [result rangeOfString:@" "].location;
             if (firstSpaceIndex == NSNotFound) return;
@@ -80,11 +70,11 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
             linkRect.origin.y *= scale;
             linkRect.size.width *= scale;
             linkRect.size.height *= scale;
-            linkRect.origin.x += scrollView.contentInset.left;
-            linkRect.origin.y += scrollView.contentInset.top;
+            linkRect.origin.x += self.webView.scrollView.contentInset.left;
+            linkRect.origin.y += self.webView.scrollView.contentInset.top;
             
             NSMutableArray *disabledGestureRecognizers = [NSMutableArray array];
-            onViewAndSubviewsRecursive(targetWebView, ^(UIView *view) {
+            onViewAndSubviewsRecursive(self.webView, ^(UIView *view) {
                 for (UIGestureRecognizer *g in view.gestureRecognizers) {
                     if (g != gr && g.enabled) {
                         g.enabled = NO;
@@ -107,7 +97,7 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
                     [presentingVC presentViewController:avc animated:YES completion:nil];
                 }];
             } else {
-                avc.popoverPresentationController.sourceView = targetWebView;
+                avc.popoverPresentationController.sourceView = self.webView;
                 avc.popoverPresentationController.sourceRect = linkRect;
                 avc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
                 [self.viewController presentViewController:avc animated:YES completion:nil];
@@ -116,39 +106,18 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 for (UIGestureRecognizer *g in disabledGestureRecognizers) g.enabled = YES;
             });
-        };
-        
-        if (self.uiWebView) {
-            processJSResult([self.uiWebView stringByEvaluatingJavaScriptFromString:js]);
-        } else {
-            [self.webView evaluateJavaScript:js completionHandler:^(NSString *href, NSError *error) { processJSResult(href); }];
-        }
+        }];
     }
 }
 
 @end
 
 
-@interface FCUIWebViewWithLongPressActivityMenu ()
+@interface FCWebViewWithLongPressActivityMenu ()
 @property (nonatomic) FCWebViewLongPressActivityMenu *longPressActivityMenu;
 @end
 
-@interface FCWKWebViewWithLongPressActivityMenu ()
-@property (nonatomic) FCWebViewLongPressActivityMenu *longPressActivityMenu;
-@end
-
-@implementation FCUIWebViewWithLongPressActivityMenu
-- (instancetype)initWithFrame:(CGRect)frame viewController:(UIViewController *)viewController
-{
-    if ( (self = [super initWithFrame:frame]) ) {
-        self.longPressActivityMenu = [FCWebViewLongPressActivityMenu new];
-        [self.longPressActivityMenu attachToUIWebView:self inViewController:viewController];
-    }
-    return self;
-}
-@end
-
-@implementation FCWKWebViewWithLongPressActivityMenu
+@implementation FCWebViewWithLongPressActivityMenu
 - (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration viewController:(UIViewController *)viewController
 {
     if ( (self = [super initWithFrame:frame configuration:configuration]) ) {
