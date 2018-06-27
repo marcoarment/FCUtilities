@@ -87,7 +87,7 @@ static FCTwitterAuthorization *g_currentInstance = NULL;
          self.consumerKey, self.consumerSecret, self.callbackURLScheme
     ]];
     
-    if ([UIApplication.sharedApplication canOpenURL:appAuthURL]) {
+    if ([FCTwitterAuthorization isTwitterAppInstalled]) {
         [UIApplication.sharedApplication openURL:appAuthURL options:@{} completionHandler:^(BOOL success) {
             if (! success) [self finishWithCredentials:nil];
         }];
