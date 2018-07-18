@@ -65,5 +65,28 @@
 	return fc_UIColorFromHexInt(hexNum);
 }
 
+// adaptation of https://stackoverflow.com/a/18903483/30480
+- (UIColor *)fc_colorByBlendingWithColor:(UIColor *)color2
+{
+    CGFloat r1, g1, b1, a1, r2, g2, b2, a2;
+
+    if (! [self getRed:&r1 green:&g1 blue:&b1 alpha:&a1]) {
+        if ([self getWhite:&r1 alpha:&a1]) g1 = b1 = r1;
+        else return nil;
+    }
+
+    if (! [color2 getRed:&r2 green:&g2 blue:&b2 alpha:&a2]) {
+        if ([color2 getWhite:&r2 alpha:&a2]) g2 = b2 = r2;
+        else return nil;
+    }
+
+    CGFloat beta = 1.0f - a2;
+    
+    CGFloat r = r1 * beta + r2 * a2;
+    CGFloat g = g1 * beta + g2 * a2;
+    CGFloat b = b1 * beta + b2 * a2;
+    //CGFloat a = a1 * beta + a2 * a2;
+    return [UIColor colorWithRed:r green:g blue:b alpha:a1];
+}
 
 @end

@@ -16,5 +16,6 @@
 - (UIColor *)fc_colorByModifyingHSBA:(void (^)(CGFloat *hue, CGFloat *saturation, CGFloat *brightness, CGFloat *alpha))modifyingBlock;
 - (NSString *)fc_CSSColor;
 + (UIColor *)fc_colorWithHexString:(NSString *)hexString;
+- (UIColor *)fc_colorByBlendingWithColor:(UIColor *)color2;
 
 @end
