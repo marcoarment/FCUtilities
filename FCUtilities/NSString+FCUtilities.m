@@ -31,6 +31,60 @@
 #endif
 }
 
+// Crude and incomplete, but fast; useful for search indexing, but not much else
+// Among other issues: doesn't parse into a tree, doesn't convert HTML entities, doesn't distinguish which tags should be replaced by whitespace
+//
+// Don't use NSAttributedString with NSHTMLTextDocumentType -- it's very slow and can deadlock if used from multiple threads
+//
+- (NSString *)fc_stringByRemovingHTMLTags
+{
+    if (! self.length) return self;
+
+    NSMutableString *outputString = [NSMutableString string];
+    NSScanner *tagScanner = [[NSScanner alloc] initWithString:self];
+    
+    do {
+        NSString *stringBeforeTag = nil;
+        [tagScanner scanUpToString:@"<" intoString:&stringBeforeTag];
+        if (stringBeforeTag) [outputString appendString:stringBeforeTag];
+        tagScanner.scanLocation++;
+        
+        [tagScanner scanUpToString:@">" intoString:NULL];
+        tagScanner.scanLocation++;
+        [outputString appendString:@" "];
+    } while (! tagScanner.isAtEnd);
+    
+    return [outputString stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+}
+
+- (NSArray<NSString *> *)fc_tokenizedWords
+{
+    NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc] initWithTagSchemes:@[ NSLinguisticTagSchemeTokenType ] options:0];
+    tagger.string = self;
+    NSLinguisticTaggerOptions o = NSLinguisticTaggerOmitWhitespace;
+
+    NSMutableArray<NSString *> *words = [NSMutableArray array];
+    [tagger enumerateTagsInRange:NSMakeRange(0, self.length) unit:NSLinguisticTaggerUnitWord scheme:NSLinguisticTagSchemeTokenType options:o usingBlock:^(NSLinguisticTag tag, NSRange tokenRange, BOOL *stop) {
+        [words addObject:[self substringWithRange:tokenRange]];
+    }];
+    return words;
+}
+
+- (NSString *)fc_stringWithNormalizedWhitespace
+{
+    NSCharacterSet *whitespaceSet = NSCharacterSet.whitespaceAndNewlineCharacterSet;
+    NSMutableString *outputString = [NSMutableString string];
+    NSScanner *scanner = [[NSScanner alloc] initWithString:self];
+    while (! scanner.isAtEnd) {
+        NSString *segment = NULL;
+        [scanner scanUpToCharactersFromSet:whitespaceSet intoString:&segment];
+        [scanner scanCharactersFromSet:whitespaceSet intoString:NULL];
+        if (segment) { [outputString appendString:segment]; [outputString appendString:@" "]; }
+    }
+    
+    return [outputString stringByTrimmingCharactersInSet:whitespaceSet];
+}
+
 - (NSString *)fc_summarizeToLength:(int)length withEllipsis:(BOOL)ellipsis
 {
 	NSString *str = self;
