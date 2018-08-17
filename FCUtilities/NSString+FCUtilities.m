@@ -47,10 +47,13 @@
         NSString *stringBeforeTag = nil;
         [tagScanner scanUpToString:@"<" intoString:&stringBeforeTag];
         if (stringBeforeTag) [outputString appendString:stringBeforeTag];
+        if (tagScanner.isAtEnd) break;
         tagScanner.scanLocation++;
         
         [tagScanner scanUpToString:@">" intoString:NULL];
+        if (tagScanner.isAtEnd) break;
         tagScanner.scanLocation++;
+        
         [outputString appendString:@" "];
     } while (! tagScanner.isAtEnd);
     
