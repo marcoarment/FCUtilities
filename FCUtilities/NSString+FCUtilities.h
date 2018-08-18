@@ -24,8 +24,6 @@
 - (NSString *)fc_hexString;
 - (NSString *)fc_MD5Digest;
 
-- (NSString *)fc_stringByRemovingHTMLTags;
-- (NSArray<NSString *> *)fc_tokenizedWords;
 - (NSString *)fc_stringWithNormalizedWhitespace;
 
 @end
