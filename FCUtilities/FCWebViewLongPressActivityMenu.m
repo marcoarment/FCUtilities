@@ -113,7 +113,7 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
 @end
 
 
-@interface FCWebViewWithLongPressActivityMenu ()
+@interface FCWebViewWithLongPressActivityMenu () <UIGestureRecognizerDelegate>
 @property (nonatomic) FCWebViewLongPressActivityMenu *longPressActivityMenu;
 @end
 
@@ -123,8 +123,41 @@ static void onViewAndSubviewsRecursive(UIView *startingView, void (^block)(UIVie
     if ( (self = [super initWithFrame:frame configuration:configuration]) ) {
         self.longPressActivityMenu = [FCWebViewLongPressActivityMenu new];
         [self.longPressActivityMenu attachToWebView:self inViewController:viewController];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(menuDidHide) name:UIMenuControllerDidHideMenuNotification object:nil];
+        
+        UIGestureRecognizer *tapGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(responderTapGestureFired:)];
+        tapGR.delegate = self;
+        [self addGestureRecognizer:tapGR];
     }
     return self;
 }
+
+// By default, selecting text in a WKWebView makes the webview first responder.
+// This blocks many modifier-less UIKeyCommands from working afterward (spacebar, arrow keys).
+// Resigning first responder when the UIMenuController is done fixes this.
+
+- (void)resignFirstResponderIfNotNeeded
+{
+    if (UIMenuController.sharedMenuController.isMenuVisible) return;
+    
+    [self evaluateJavaScript:@"window.getSelection().toString()" completionHandler:^(NSString *selection, NSError *error) {
+        if (! selection.length) [self resignFirstResponder];
+    }];
+}
+
+- (void)menuDidHide
+{
+    if (! _allowsFirstResponderCapture) [self resignFirstResponderIfNotNeeded];
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer { return YES; }
+
+- (void)responderTapGestureFired:(UITapGestureRecognizer *)gr
+{
+    if (! _allowsFirstResponderCapture) dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self resignFirstResponderIfNotNeeded];
+    });
+}
+
 @end
 

@@ -17,5 +17,6 @@
 
 - (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration viewController:(UIViewController *)viewController;
 
+@property (nonatomic) BOOL allowsFirstResponderCapture;
 @property (nonatomic, readonly) FCWebViewLongPressActivityMenu *longPressActivityMenu;
 @end
