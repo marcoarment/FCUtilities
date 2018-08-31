@@ -24,7 +24,7 @@
 #if TARGET_OS_IPHONE && ! TARGET_OS_WATCH
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(removeAllObjects) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 #endif
-        self.queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
+        self.queue = dispatch_queue_create("FCCache", DISPATCH_QUEUE_SERIAL); // compatible with concurrent as well via barriers
     }
     return self;
 }
