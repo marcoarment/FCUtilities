@@ -23,6 +23,7 @@
 - (NSString *)fc_HTMLEncodedString;
 - (NSString *)fc_hexString;
 - (NSString *)fc_MD5Digest;
++ (NSString *)fc_NewGuidString;
 
 - (NSString *)fc_stringWithNormalizedWhitespace;
 
