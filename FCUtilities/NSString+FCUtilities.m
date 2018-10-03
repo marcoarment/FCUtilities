@@ -129,4 +129,27 @@
     return stringBuffer;
 }
 
+- (NSString *)fc_stringByReplacingMatches:(NSRegularExpression *)regex usingBlock:(NSString *(^)(NSTextCheckingResult *match, NSArray<NSString *> *captureGroups))replacementBlock
+{
+    if (! replacementBlock) return self;
+    
+    NSUInteger numCaptureGroups = regex.numberOfCaptureGroups;
+    NSMutableString *mutableString = [self mutableCopy];
+    NSInteger offset = 0;
+    for (NSTextCheckingResult *result in [regex matchesInString:self options:0 range:NSMakeRange(0, self.length)]) {
+        NSMutableArray<NSString *> *captureGroups = [NSMutableArray arrayWithCapacity:numCaptureGroups + 1];
+        for (NSUInteger g = 0; g <= numCaptureGroups; g++) {
+            NSRange captureRange = [result rangeAtIndex:g];
+            captureGroups[g] = captureRange.location == NSNotFound ? @"" : [self substringWithRange:captureRange];
+        }
+        
+        NSRange resultRange = result.range;
+        resultRange.location += offset;
+        NSString *replacement = replacementBlock(result, captureGroups);
+        [mutableString replaceCharactersInRange:resultRange withString:replacement];
+        offset += (replacement.length - resultRange.length);
+    }
+    return mutableString;
+}
+
 @end

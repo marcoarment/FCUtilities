@@ -26,4 +26,6 @@
 
 - (NSString *)fc_stringWithNormalizedWhitespace;
 
+- (NSString *)fc_stringByReplacingMatches:(NSRegularExpression *)regex usingBlock:(NSString *(^)(NSTextCheckingResult *match, NSArray<NSString *> *captureGroups))replacementBlock;
+
 @end
