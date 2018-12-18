@@ -20,7 +20,7 @@
 {
     if ( (self = [super init]) ) {
         self.backingStore = [NSMutableDictionary dictionary];
-        self.queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
+        self.queue = dispatch_queue_create("FCConcurrentMutableDictionary", DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }
