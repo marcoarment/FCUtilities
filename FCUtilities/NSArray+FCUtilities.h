@@ -10,6 +10,7 @@
 - (NSArray *)fc_filteredArrayUsingBlock:(BOOL (^)(id obj, NSUInteger idx, BOOL *stop))keepBlock;
 - (NSArray *)fc_arrayWithCorrespondingObjectsFromBlock:(id (^)(id obj))newObjectFromObjectBlock;
 - (id)fc_randomObject;
+- (id)fc_safeObjectAtIndex:(NSUInteger)idx;
 
 @end
 

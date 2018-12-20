@@ -25,6 +25,11 @@
     return self[arc4random_uniform((uint32_t) self.count)];
 }
 
+- (id)fc_safeObjectAtIndex:(NSUInteger)idx
+{
+    return idx < self.count ? [self objectAtIndex:idx] : nil;
+}
+
 @end
 
 
