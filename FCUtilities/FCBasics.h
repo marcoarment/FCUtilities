@@ -3,7 +3,7 @@
 //  Part of FCUtilities by Marco Arment. See included LICENSE file for BSD license.
 //
 
-#import <Foundation/Foundation.h>
+@import UIKit;
 
 #define user_defaults_get_bool(key)   [[NSUserDefaults standardUserDefaults] boolForKey:key]
 #define user_defaults_get_int(key)    ((int) [[NSUserDefaults standardUserDefaults] integerForKey:key])
