@@ -140,6 +140,31 @@
 	return result;
 }
 
+- (UIImage *)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)borderCornerRadius borderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth
+{
+    CGFloat halfBorderWidth = borderWidth / 2.0f;
+    CGRect outputRect = CGRectMake(0, 0, self.size.width, self.size.height);
+    CGRect imageRect = CGRectInset(outputRect, borderWidth, borderWidth);
+    CGRect borderRect = CGRectInset(outputRect, halfBorderWidth, halfBorderWidth);
+    UIGraphicsBeginImageContextWithOptions(outputRect.size, NO, self.scale);
+    CGFloat imageCornerRadius = MAX(0, borderCornerRadius - borderWidth);
+
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSaveGState(ctx);
+    [[UIBezierPath bezierPathWithRoundedRect:imageRect byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(imageCornerRadius, imageCornerRadius)] addClip];
+    [self drawInRect:imageRect];
+    CGContextRestoreGState(ctx);
+
+    UIBezierPath *borderPath = [UIBezierPath bezierPathWithRoundedRect:borderRect byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(borderCornerRadius, borderCornerRadius)];
+    borderPath.lineWidth = borderWidth;
+    [borderColor setStroke];
+    [borderPath stroke];
+
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return result;
+}
+
 - (UIImage * _Nonnull)fc_imagePaddedWithColor:(UIColor * _Nonnull)color insets:(UIEdgeInsets)insets
 {
     // Only ever adds size to the image, doesn't remove it
