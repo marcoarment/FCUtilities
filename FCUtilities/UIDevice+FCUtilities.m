@@ -48,7 +48,7 @@ static FCDeviceRadioType fcRadioType;
     
     NSString *mid = self.fc_modelIdentifier;
     
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+    if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
         if ([mid isEqualToString:@"iPad2,1"]) { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeWiFiOnly; return (fcModelHumanIdentifier = @"iPad 2"); }
         if ([mid isEqualToString:@"iPad2,2"]) { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad 2"); }
         if ([mid isEqualToString:@"iPad2,3"]) { fcCPUClass = FCDeviceCPUClassA5; fcRadioType = FCDeviceRadioTypeCellular; return (fcModelHumanIdentifier = @"iPad 2"); }
