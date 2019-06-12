@@ -61,7 +61,7 @@ static __inline__ __attribute__((always_inline)) BOOL fc_setGroupKeychainStringF
 
 static __inline__ __attribute__((always_inline)) BOOL fc_setGroupKeychainStringForKey(NSString *key, NSString *value, NSString *accessGroup)
 {
-    return fc_setGroupKeychainStringForKeyWithAccessibility(key, value, kSecAttrAccessibleAfterFirstUnlock, accessGroup);
+    return fc_setGroupKeychainStringForKeyWithAccessibility(key, value, kSecAttrAccessibleAlways, accessGroup);
 }
 
 static __inline__ __attribute__((always_inline)) NSString *fc_keychainStringForKey(NSString *key, BOOL *outKeychainError)
@@ -81,7 +81,7 @@ static __inline__ __attribute__((always_inline)) BOOL fc_setKeychainStringForKey
 
 static __inline__ __attribute__((always_inline)) BOOL fc_setKeychainStringForKey(NSString *key, NSString *value)
 {
-    return fc_setGroupKeychainStringForKeyWithAccessibility(key, value, kSecAttrAccessibleAfterFirstUnlock, nil);
+    return fc_setGroupKeychainStringForKeyWithAccessibility(key, value, kSecAttrAccessibleAlways, nil);
 }
 
 #endif
