@@ -12,5 +12,13 @@
 // Subclasses may override these to e.g. customize appearance or register a different cell class
 - (void)configureTableView:(UITableView *)tableView withCellReuseIdentifier:(NSString *)cellReuseIdentifier;
 - (void)configureCell:(UITableViewCell *)cell withItem:(id)item;
+- (UIView *)viewForSectionHeaderWithTitle:(NSString *)title width:(CGFloat)width;
+
+@end
+
+
+@interface FCPickerViewSectionBreak : NSObject
+
+- (instancetype)initWithSectionTitle:(NSString *)title;
 
 @end

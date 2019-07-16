@@ -5,12 +5,30 @@
 
 #import "FCPickerViewController.h"
 
+
+@interface FCPickerViewSectionBreak ()
+@property (nonatomic, copy) NSString *title;
+@end
+@implementation FCPickerViewSectionBreak
+- (instancetype)initWithSectionTitle:(NSString *)title
+{
+    if ( (self = [super init]) ) {
+        self.title = title;
+    }
+    return self;
+}
+@end
+
+
 #define kCellReuseIdentifier @"FCPickerCell"
 
 @interface FCPickerViewController () {
     NSUInteger _currentSelection;
+    NSArray<NSArray *> *itemsBySection;
+    NSArray *allItems;
+    NSArray *sectionTitles;
+    NSIndexPath *indexPathOfSelectedCell;
 }
-@property (nonatomic) NSArray *items;
 @property (nonatomic, copy) NSString *(^itemLabelBlock)(id item);
 @property (nonatomic, copy) void (^pickedBlock)(NSUInteger idx);
 @end
@@ -20,8 +38,27 @@
 - (instancetype)initWithTitle:(NSString *)title items:(NSArray *)items itemLabelBlock:(NSString *(^)(id item))itemLabelBlock pickedBlock:(void (^)(NSUInteger idx))pickedBlock currentSelection:(NSUInteger)currentSelection
 {
     if ( (self = [super initWithStyle:UITableViewStyleGrouped]) ) {
+    
+        NSMutableArray *filteredItems = [NSMutableArray array];
+        NSMutableArray *sections = [NSMutableArray array];
+        NSMutableArray *currentSection = [NSMutableArray array];
+        NSMutableArray *titlesBySection = [NSMutableArray arrayWithObject:@""];
+        [sections addObject:currentSection];
+        for (id item in items) {
+            if ([item isKindOfClass:FCPickerViewSectionBreak.class]) {
+                currentSection = [NSMutableArray array];
+                [sections addObject:currentSection];
+                [titlesBySection addObject:((FCPickerViewSectionBreak *) item).title ?: @""];
+            } else {
+                [filteredItems addObject:item];
+                [currentSection addObject:item];
+            }
+        }
+        allItems = [filteredItems copy];
+        itemsBySection = [sections copy];
+        sectionTitles = [titlesBySection copy];
+
         self.title = title;
-        self.items = items;
         self.itemLabelBlock = itemLabelBlock;
         self.pickedBlock = pickedBlock;
         _currentSelection = currentSelection;
@@ -47,19 +84,41 @@
     cell.textLabel.text = self.itemLabelBlock ? self.itemLabelBlock(item) : ([item isKindOfClass:NSString.class] ? (NSString *) item : [item description]);
 }
 
+// For subclass overriding
+- (UIView *)viewForSectionHeaderWithTitle:(NSString *)title width:(CGFloat)width
+{
+    return nil;
+}
+
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView { return 1; }
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    UIView *titleView = [self tableView:tableView viewForHeaderInSection:section];
+    return titleView ? titleView.bounds.size.height : 44;
+}
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section { return self.items.count; }
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    NSString *titleStr = sectionTitles[section];
+    if (! titleStr.length) return nil;
+    return [self viewForSectionHeaderWithTitle:sectionTitles[section] width:tableView.bounds.size.width];
+}
+
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView { return itemsBySection.count; }
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section { return itemsBySection[section].count; }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellReuseIdentifier forIndexPath:indexPath];
-    [self configureCell:cell withItem:self.items[indexPath.row]];
+    id item = itemsBySection[indexPath.section][indexPath.row];
+    [self configureCell:cell withItem:item];
     
-    if (indexPath.row == _currentSelection) {
+    if ([allItems indexOfObject:item] == _currentSelection) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        indexPathOfSelectedCell = [indexPath copy];
     } else {
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
@@ -71,16 +130,17 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.row == _currentSelection) {
+    if ([indexPath isEqual:indexPathOfSelectedCell]) {
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         return;
     }
     
-    [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:_currentSelection inSection:0]].accessoryType = UITableViewCellAccessoryNone;
+    [tableView cellForRowAtIndexPath:indexPathOfSelectedCell].accessoryType = UITableViewCellAccessoryNone;
     [tableView cellForRowAtIndexPath:indexPath].accessoryType = UITableViewCellAccessoryCheckmark;
+    indexPathOfSelectedCell = indexPath;
     
     dispatch_async(dispatch_get_main_queue(), ^(void){
-        self.pickedBlock(indexPath.row);
+        self.pickedBlock([allItems indexOfObject:itemsBySection[indexPath.section][indexPath.row]]);
         [self.navigationController popViewControllerAnimated:YES];
     });
 }
