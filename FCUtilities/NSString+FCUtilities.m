@@ -113,20 +113,13 @@
     return [NSString stringWithFormat:@"%@", hex];
 }
 
-- (NSString *)fc_MD5Digest
+- (NSString *)fc_URLSafeBase64EncodedString
 {
-    NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
-	unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(data.bytes, (CC_LONG) data.length, result);
-    data = [NSData dataWithBytes:result length:CC_MD5_DIGEST_LENGTH];
-
-	NSMutableString *stringBuffer = [NSMutableString stringWithCapacity:(data.length * 2)];
-    const unsigned char *dataBuffer = data.bytes;
-    int i;
-    for (i = 0; i < data.length; ++i) {
-        [stringBuffer appendFormat:@"%02lx", (unsigned long)dataBuffer[i]];
-	}
-    return stringBuffer;
+    NSString *str = [[self dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+    str = [str stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
+    str = [str stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+    str = [str stringByReplacingOccurrencesOfString:@"=" withString:@""];
+    return str;
 }
 
 - (NSString *)fc_stringByReplacingMatches:(NSRegularExpression *)regex usingBlock:(NSString *(^)(NSTextCheckingResult *match, NSArray<NSString *> *captureGroups))replacementBlock

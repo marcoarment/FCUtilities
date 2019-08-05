@@ -21,13 +21,6 @@
     return [[NSString alloc] initWithBytes:[self bytes] length:[self length] encoding:NSUTF8StringEncoding];
 }
 
-- (NSData *)fc_MD5Digest
-{
-	unsigned char result[CC_MD5_DIGEST_LENGTH];    
-    CC_MD5([self bytes], (CC_LONG)[self length], result);
-    return [NSData dataWithBytes:result length:CC_MD5_DIGEST_LENGTH];
-}
-
 - (NSString *)fc_hexString
 {
 	NSMutableString *stringBuffer = [NSMutableString stringWithCapacity:([self length] * 2)];	
@@ -37,6 +30,15 @@
         [stringBuffer appendFormat:@"%02lx", (unsigned long)dataBuffer[i]];
 	}
     return [stringBuffer copy];
+}
+
+- (NSString *)fc_URLSafeBase64EncodedString
+{
+    NSString *str = [self base64EncodedStringWithOptions:0];
+    str = [str stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
+    str = [str stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+    str = [str stringByReplacingOccurrencesOfString:@"=" withString:@""];
+    return str;
 }
 
 // Deflate functions adapted from:
