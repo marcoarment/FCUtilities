@@ -23,7 +23,10 @@
 #define APP_VERSION     	[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]
 #define APP_BUILD_NUMBER    [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"]
 
-inline __attribute__((always_inline)) NSString *fc_safeString(NSString *str) { return str ? str : @""; }
+inline __attribute__((always_inline)) NSString *fc_safeString(NSString *str)
+{
+    return str && [str isKindOfClass:NSString.class] ? str : @"";
+}
 
 inline __attribute__((always_inline)) NSString *fc_dictionaryValueToString(NSObject *cfObj)
 {
