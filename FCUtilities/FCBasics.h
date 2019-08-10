@@ -28,6 +28,11 @@ inline __attribute__((always_inline)) NSString *fc_safeString(NSString *str)
     return str && [str isKindOfClass:NSString.class] ? str : @"";
 }
 
+inline __attribute__((always_inline)) NSString *fc_safeStringCopy(NSString *str)
+{
+    return str && [str isKindOfClass:NSString.class] ? [NSString stringWithFormat:@"%@", str] : @"";
+}
+
 inline __attribute__((always_inline)) NSString *fc_dictionaryValueToString(NSObject *cfObj)
 {
     if ([cfObj isKindOfClass:[NSString class]]) return (NSString *)cfObj;
