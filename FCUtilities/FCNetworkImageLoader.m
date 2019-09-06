@@ -47,7 +47,7 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 {
     if ( (self = [super init]) ) {
         self.name = @"FCNetworkImageLoader";
-        self.maxConcurrentOperationCount = 5;
+        self.maxConcurrentOperationCount = 1;
         self.imageCache = [[FCCache alloc] init];
         self.imageToSessionTaskMapTable = [NSMapTable weakToWeakObjectsMapTable];
         self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:self];
