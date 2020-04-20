@@ -50,11 +50,11 @@
     bzero(&strm, sizeof(z_stream));
     strm.avail_in = (unsigned int) self.length;
     strm.next_in = (unsigned char *) self.bytes;
-    int retCode;
-    if ( (retCode = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15, 8, Z_DEFAULT_STRATEGY)) != Z_OK) return nil;
+    if (Z_OK != deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15, 8, Z_DEFAULT_STRATEGY)) return nil;
 
     NSMutableData *result = [NSMutableData dataWithCapacity:(self.length / 10)];
     unsigned char output[1024];
+    int retCode;
     do {
         strm.avail_out = 1024;
         strm.next_out = output;
@@ -78,11 +78,11 @@
 	bzero(&strm, sizeof(z_stream));
 	strm.avail_in = (int) self.length;
 	strm.next_in = (unsigned char *) self.bytes;
-	int retCode;
-	if ( (retCode = inflateInit2(&strm, (headerPresent ? 47 : -MAX_WBITS))) != Z_OK) return nil;
+	if (Z_OK != inflateInit2(&strm, (headerPresent ? 47 : -MAX_WBITS))) return nil;
 
 	NSMutableData *result = [NSMutableData dataWithCapacity:(self.length * 2)];
 	unsigned char output[1024];
+	int retCode;
 	do {
 		strm.avail_out = 1024;
 		strm.next_out = output;
