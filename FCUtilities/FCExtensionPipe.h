@@ -17,7 +17,7 @@
 - (instancetype)initWithAppGroupIdentifier:(NSString *)appGroupID remotePipeIdentifier:(NSString *)remotePipeID target:(__weak id)target action:(SEL)actionTakingNSDictionary;
 
 // Send messages statically. pipeIdentifier must be filename-safe.
-+ (void)sendMessageToAppGroupIdentifier:(NSString *)appGroupIdentifier pipeIdentifier:(NSString *)pipeIdentifier userInfo:(NSDictionary *)userInfo;
++ (BOOL)sendMessageToAppGroupIdentifier:(NSString *)appGroupIdentifier pipeIdentifier:(NSString *)pipeIdentifier userInfo:(NSDictionary *)userInfo;
 
 
 @property (nonatomic, weak) id target;

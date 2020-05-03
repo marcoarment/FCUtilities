@@ -50,7 +50,7 @@ static void notificationCenterCallback(CFNotificationCenterRef center, void *obs
     return [[NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:appGroupID].path stringByAppendingPathComponent:[NSString stringWithFormat:@"FCExtensionPipe-%@", s]];
 }
 
-+ (void)sendMessageToAppGroupIdentifier:(NSString *)appGroupID pipeIdentifier:(NSString *)pipeID userInfo:(NSDictionary *)userInfo
++ (BOOL)sendMessageToAppGroupIdentifier:(NSString *)appGroupID pipeIdentifier:(NSString *)pipeID userInfo:(NSDictionary *)userInfo
 {
     NSError *error;
     NSData *data = [NSPropertyListSerialization dataWithPropertyList:userInfo format:NSPropertyListBinaryFormat_v1_0 options:0 error:&error];
@@ -59,11 +59,12 @@ static void notificationCenterCallback(CFNotificationCenterRef center, void *obs
     }
 
     if (! [data writeToFile:[self filenameForAppGroupIdentifier:appGroupID sourceIdentifier:pipeID] atomically:YES]) {
-        [[[NSException alloc] initWithName:NSInvalidArgumentException reason:@"FCExtensionPipe write error" userInfo:nil] raise];
+        return NO;
     }
 
     CFStringRef cfStrID = (__bridge CFStringRef) [NSString stringWithFormat:@"%@.%@", appGroupID, pipeID];
     CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), cfStrID, NULL, NULL, YES);
+    return YES;
 }
 
 @end
