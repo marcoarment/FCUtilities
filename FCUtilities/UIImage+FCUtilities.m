@@ -4,8 +4,83 @@
 //
 
 #import "UIImage+FCUtilities.h"
+@import CoreServices;
 
 @implementation UIImage (FCUtilities)
+
++ (UIImage * _Nullable)fc_decodedImageFromData:(NSData * _Nonnull)data
+{
+    return [self fc_decodedImageFromData:data resizedToMaxOutputDimension:0 maxSourceBytes:0 maxSourceDimension:0 onlyIfCommonSourceFormat:NO];
+}
+
++ (UIImage * _Nullable)fc_decodedImageFromData:(NSData * _Nonnull)data resizedToMaxOutputDimension:(int)outputDimension
+{
+    return [self fc_decodedImageFromData:data resizedToMaxOutputDimension:outputDimension maxSourceBytes:0 maxSourceDimension:0 onlyIfCommonSourceFormat:NO];
+}
++ (UIImage * _Nullable)fc_decodedImageFromData:(NSData * _Nonnull)data resizedToMaxOutputDimension:(int)outputDimension maxSourceBytes:(int)maxSourceBytes maxSourceDimension:(int)maxSourceDimension onlyIfCommonSourceFormat:(BOOL)onlyIfCommonSourceFormat
+{
+    if (! data.length) return nil;
+    if (maxSourceBytes > 0 && data.length > maxSourceBytes) return nil;
+
+    CGImageSourceRef imageSource = CGImageSourceCreateWithData((__bridge CFDataRef) data, (__bridge CFDictionaryRef) @{
+        ((__bridge NSString *) kCGImageSourceShouldCache) : @NO
+    });
+    if (! imageSource) return nil;
+
+    if (onlyIfCommonSourceFormat) {
+        // JPEG and PNG only to avoid huge CPU/RAM usage when using more-obscure, less-optimized formats like JPEG 2000
+        CFStringRef uti = CGImageSourceGetType(imageSource);
+        if (! uti || (
+            ! UTTypeConformsTo(uti, kUTTypeJPEG) &&
+            ! UTTypeConformsTo(uti, kUTTypePNG) &&
+            ! UTTypeConformsTo(uti, kUTTypeGIF)
+        )) {
+            CFRelease(imageSource);
+            return nil;
+        }
+    }
+
+    CFDictionaryRef dictRef = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, NULL);
+    if (! dictRef) {
+        CFRelease(imageSource);
+        return nil;
+    }
+    
+    NSDictionary *dict = (__bridge NSDictionary *)dictRef;
+    int sourceWidth = [dict[(__bridge NSString *) kCGImagePropertyPixelWidth] intValue];
+    int sourceHeight = [dict[(__bridge NSString *) kCGImagePropertyPixelHeight] intValue];
+    CFRelease(dictRef);
+
+    if (maxSourceDimension > 0 && (
+        sourceWidth <= 0 || sourceHeight <= 0 || sourceWidth > maxSourceDimension || sourceHeight > maxSourceDimension
+    )) {
+        CFRelease(imageSource);
+        return nil;
+    }
+    
+    CGImageRef decodedImage;
+    UIImage *outputImage = nil;
+    if (outputDimension > 0 && MAX(sourceWidth, sourceHeight) > outputDimension) {
+        decodedImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, (__bridge CFDictionaryRef) @{
+            ((__bridge NSString *) kCGImageSourceCreateThumbnailFromImageAlways) : @YES,
+            ((__bridge NSString *) kCGImageSourceShouldCacheImmediately) : @YES,
+            ((__bridge NSString *) kCGImageSourceCreateThumbnailWithTransform) : @YES,
+            ((__bridge NSString *) kCGImageSourceThumbnailMaxPixelSize) : @(outputDimension),
+        });
+    } else {
+        decodedImage = CGImageSourceCreateImageAtIndex(imageSource, 0, (__bridge CFDictionaryRef) @{
+            ((__bridge NSString *) kCGImageSourceShouldCacheImmediately) : @YES,
+        });
+    }
+
+    if (decodedImage) {
+        outputImage = [UIImage imageWithCGImage:decodedImage];
+        CFRelease(decodedImage);
+    }
+
+    CFRelease(imageSource);
+    return outputImage;
+}
 
 + (UIImage *)fc_stretchableImageWithSolidColor:(UIColor *)solidColor
 {

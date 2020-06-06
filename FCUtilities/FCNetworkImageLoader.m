@@ -4,22 +4,31 @@
 //
 
 #import "FCNetworkImageLoader.h"
+#import "UIImage+FCUtilities.h"
 #import "FCCache.h"
 
-// If we're currently on the main thread, run block() sync, otherwise dispatch block() sync to main thread.
-static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOnMainThread(void (^block)(void))
+@interface UIImageView (FCNetworkImageLoader)
+@property (nonatomic, strong) NSURLSessionTask *fcNetworkImageLoader_downloadTask;
+@end
+
+#import <objc/runtime.h>
+@implementation UIImageView (FCNetworkImageLoader)
+@dynamic fcNetworkImageLoader_downloadTask;
+- (NSURLSessionTask *)fcNetworkImageLoader_downloadTask { return objc_getAssociatedObject(self, @selector(fcNetworkImageLoader_downloadTask)); }
+- (void)setFcNetworkImageLoader_downloadTask:(NSURLSessionTask *)downloadTask
 {
-    if (block) {
-        if ([NSThread isMainThread]) block(); else dispatch_sync(dispatch_get_main_queue(), block);
-    }
+    objc_setAssociatedObject(self, @selector(fcNetworkImageLoader_downloadTask), downloadTask, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
+@end
 
 @interface FCNetworkImageLoader () <NSURLSessionDataDelegate>
 @property (nonatomic) FCCache *imageCache;
-@property (nonatomic) NSMapTable *imageToSessionTaskMapTable;
 @property (nonatomic) NSURLSession *session;
+@property (nonatomic) NSOperationQueue *writeQueueWrapperForDelegate;
+@property (nonatomic) dispatch_queue_t writeQueue;
+@property (nonatomic) dispatch_queue_t decodeQueue;
 @property (nonatomic, copy) BOOL (^cellularPolicyHandler)(void);
-@property (nonatomic, copy) NSData *(^fetchedImageDataHandler)(NSData *imageData);
+@property (nonatomic, copy) UIImage *(^fetchedImageDecoder)(NSData *imageData);
 + (instancetype)sharedInstance;
 @end
 
@@ -38,19 +47,25 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
     FCNetworkImageLoader.sharedInstance.cellularPolicyHandler = returnIsCellularAllowed;
 }
 
-+ (void)setFetchedImageDataHandler:(NSData * (^)(NSData *imageData))block
++ (void)setFetchedImageDecoder:(UIImage * (^)(NSData *imageData))block
 {
-    FCNetworkImageLoader.sharedInstance.fetchedImageDataHandler = block;
+    FCNetworkImageLoader.sharedInstance.fetchedImageDecoder = block;
 }
 
 - (instancetype)init
 {
     if ( (self = [super init]) ) {
-        self.name = @"FCNetworkImageLoader";
-        self.maxConcurrentOperationCount = 1;
         self.imageCache = [[FCCache alloc] init];
-        self.imageToSessionTaskMapTable = [NSMapTable weakToWeakObjectsMapTable];
-        self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:self];
+        
+        self.writeQueue = dispatch_queue_create("FCNetworkImageLoader", DISPATCH_QUEUE_SERIAL);
+        self.decodeQueue = dispatch_queue_create("FCNetworkImageLoader-decode", DISPATCH_QUEUE_CONCURRENT);
+
+        self.writeQueueWrapperForDelegate = [NSOperationQueue new];
+        self.writeQueueWrapperForDelegate.name = @"FCNetworkImageLoader";
+        self.writeQueueWrapperForDelegate.maxConcurrentOperationCount = 1;
+        self.writeQueueWrapperForDelegate.underlyingQueue = self.writeQueue;
+
+        self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:self.writeQueueWrapperForDelegate];
     }
     return self;
 }
@@ -77,49 +92,64 @@ static inline __attribute__((always_inline)) void FCNetworkImageLoader_executeOn
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy
 {
-    UIImage *cachedImage = [FCNetworkImageLoader.sharedInstance.imageCache objectForKey:url.absoluteString];
-    if (cachedImage) {
-        FCNetworkImageLoader_executeOnMainThread(^{ imageView.image = cachedImage; });
-        return;
-    }
+    [FCNetworkImageLoader.sharedInstance _loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:cachePolicy];
+}
 
-    if (placeholder) FCNetworkImageLoader_executeOnMainThread(^{ imageView.image = placeholder; });
+- (void)_loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy
+{
+    dispatch_sync(self.writeQueue, ^{
+        UIImage *cachedImage = [self.imageCache objectForKey:url.absoluteString];
+        NSURLSessionTask *alreadyDownloadingTask = imageView.fcNetworkImageLoader_downloadTask;
+        BOOL alreadyDownloadingThisURL = alreadyDownloadingTask && [alreadyDownloadingTask.originalRequest.URL isEqual:url];
+        
+        if (alreadyDownloadingTask && ! alreadyDownloadingThisURL) {
+            [alreadyDownloadingTask cancel];
+            imageView.fcNetworkImageLoader_downloadTask = nil;
+        }
+        
+        if (cachedImage) {
+            dispatch_async(dispatch_get_main_queue(), ^{ imageView.image = cachedImage; });
+            return;
+        }
 
-    NSURLSessionTask *existingTask = [FCNetworkImageLoader.sharedInstance.imageToSessionTaskMapTable objectForKey:imageView];
-    if (existingTask) {
-        if ([existingTask.originalRequest.URL.absoluteString isEqualToString:url.absoluteString]) return;
-        else [existingTask cancel];
-    }
+        if (placeholder && ! alreadyDownloadingThisURL) dispatch_async(dispatch_get_main_queue(), ^{ imageView.image = placeholder; });
 
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url cachePolicy:cachePolicy timeoutInterval:30];
-    BOOL (^cellularHandler)(void) = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
-    if (cellularHandler) req.allowsCellularAccess = cellularHandler();
+        NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url cachePolicy:cachePolicy timeoutInterval:30];
+        BOOL (^cellularHandler)(void) = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
+        if (cellularHandler) req.allowsCellularAccess = cellularHandler();
 
-    __weak UIImageView *weakImageView = imageView;
-    NSURLSessionDataTask *task = [FCNetworkImageLoader.sharedInstance.session dataTaskWithRequest:req completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        __strong UIImageView *strongImageView = weakImageView;
+        __weak typeof(self) weakSelf = self;
+        __weak UIImageView *weakImageView = imageView;
+        NSURLSessionDataTask *task = [FCNetworkImageLoader.sharedInstance.session dataTaskWithRequest:req completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            __strong typeof(self) strongSelf = weakSelf;
+            __strong UIImageView *strongImageView = weakImageView;
+            if (! strongSelf || ! strongImageView || ! data || ! response || error || ! [strongImageView.fcNetworkImageLoader_downloadTask.originalRequest.URL isEqual:url]) return;
 
-        NSData *(^imageDataHandler)(NSData *image) = FCNetworkImageLoader.sharedInstance.fetchedImageDataHandler;
-        if (imageDataHandler) data = imageDataHandler(data);
+            dispatch_async(strongSelf.decodeQueue, ^{
+                UIImage *(^imageDecoder)(NSData *image) = FCNetworkImageLoader.sharedInstance.fetchedImageDecoder;
+                UIImage *image = imageDecoder ? imageDecoder(data) : [UIImage fc_decodedImageFromData:data];
+                if (! image) return;
 
-        UIImage *image = nil;
-        if (! strongImageView || ! data || ! response || error || ! (image = [UIImage imageWithData:data scale:UIScreen.mainScreen.scale]) ) return;
-
-        [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:url.absoluteString];
-
-        FCNetworkImageLoader_executeOnMainThread(^{
-            __strong UIImageView *strongInnerImageView = weakImageView;
-            if (strongInnerImageView) strongInnerImageView.image = image;
-        });
-    }];
-    [FCNetworkImageLoader.sharedInstance.imageToSessionTaskMapTable setObject:task forKey:imageView];
-    [task resume];
+                dispatch_async(strongSelf.writeQueue, ^{
+                    [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:url.absoluteString];
+                    if (! [strongImageView.fcNetworkImageLoader_downloadTask.originalRequest.URL isEqual:url]) return;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        strongImageView.image = image;
+                    });
+                });
+            });
+        }];
+        imageView.fcNetworkImageLoader_downloadTask = task;
+        [task resume];
+    });
 }
 
 + (void)cancelLoadForImageView:(UIImageView *)imageView
 {
-    NSURLSessionTask *existingTask = [FCNetworkImageLoader.sharedInstance.imageToSessionTaskMapTable objectForKey:imageView];
-    if (existingTask) [existingTask cancel];
+    dispatch_sync(FCNetworkImageLoader.sharedInstance.writeQueue, ^{
+        NSURLSessionTask *existingTask = imageView.fcNetworkImageLoader_downloadTask;
+        if (existingTask) { [existingTask cancel]; imageView.fcNetworkImageLoader_downloadTask = nil; }
+    });
 }
 
 @end

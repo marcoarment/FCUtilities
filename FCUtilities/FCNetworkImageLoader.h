@@ -6,10 +6,14 @@
 #import <Foundation/Foundation.h>
 @import UIKit;
 
-@interface FCNetworkImageLoader : NSOperationQueue
+@interface FCNetworkImageLoader : NSObject
 
+// Optional
 + (void)setCellularPolicyHandler:(BOOL (^)(void))returnIsCellularAllowed;
-+ (void)setFetchedImageDataHandler:(NSData * (^)(NSData *imageData))block;
+
+// Optional. Will be called from a background queue, so be careful with UI* calls.
+// Use the fc_decodedImageFromData:… methods in UIImage+FCUtilities.h instead of UIImage-based processing or rendering.
++ (void)setFetchedImageDecoder:(UIImage * (^)(NSData *imageData))block;
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder;
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy;
