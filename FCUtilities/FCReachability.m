@@ -3,123 +3,102 @@
 //  Part of FCUtilities by Marco Arment. See included LICENSE file for BSD license.
 //
 
-#import "FCBasics.h"
 #import "FCReachability.h"
-@import SystemConfiguration;
+@import Network;
 
-NSString * const FCReachabilityStatusChangedNotification = @"FCReachabilityStatusChangedNotification";
-NSString * const FCReachabilityOnlineNotification = @"FCReachabilityStatusOnlineNotification";
-NSString * const FCReachabilityOfflineNotification = @"FCReachabilityStatusOfflineNotification";
-NSString * const FCReachabilityCellularPolicyChangedNotification = @"FCReachabilityStatusCellularPolicyChangedNotification";
+NSString * const FCReachabilityChangedNotification = @"FCReachabilityChangedNotification";
+NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotification";
 
 @interface FCReachability () {
-    BOOL isOnline;
-    BOOL requireWiFi;
-    SCNetworkReachabilityRef reachability;
+    nw_path_monitor_t monitor;
+    dispatch_queue_t queue;
+    BOOL wasOnline;
+    BOOL wasCellular;
+    BOOL wasExpensive;
+    BOOL wasConstrained;
+    BOOL isSettingInitialState;
 }
-
-- (void)update;
-
-@property (nonatomic) SCNetworkReachabilityFlags reachabilityFlags;
-@property (nonatomic) FCReachabilityStatus previousStatus;
-@property (nonatomic) FCReachabilityStatus status;
+@property (nonatomic) BOOL isOnline;
+@property (nonatomic) BOOL isCellular;
+@property (nonatomic) BOOL isExpensive;
+@property (nonatomic) BOOL isConstrained;
+@property (nonatomic) BOOL isUnrestricted;
 @end
-
-
-static void FCReachabilityChanged(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
-{
-    FCReachability *fcr = (__bridge FCReachability *) info;
-    fcr.previousStatus = fcr.status;
-    fcr.status =
-        (flags & kSCNetworkReachabilityFlagsReachable) ?
-        (flags & kSCNetworkReachabilityFlagsIsWWAN ? FCReachabilityStatusOnlineViaCellular : FCReachabilityStatusOnlineViaWiFi) :
-        FCReachabilityStatusOffline
-    ;
-    // NSLog(@"[reachability] %@, %@", (flags & kSCNetworkReachabilityFlagsReachable) ? @"reachable" : @"offline", (flags & kSCNetworkReachabilityFlagsIsWWAN) ? @"cellular" : @"wi-fi");
-    [fcr update];
-}
-
 
 @implementation FCReachability
 
-- (instancetype)initWithHostname:(NSString *)hostname allowCellular:(BOOL)allowCellular
++ (instancetype)sharedInstance
+{
+    static dispatch_once_t onceToken;
+    static FCReachability *g_inst = nil;
+    dispatch_once(&onceToken, ^{
+        g_inst = [[FCReachability alloc] init];
+    });
+    return g_inst;
+}
+
+- (instancetype)init
 {
     if ( (self = [super init]) ) {
-        isOnline = NO;
-        requireWiFi = ! allowCellular;
-        [self setReachabilityHostname:hostname];
+        dispatch_queue_attr_t attrs = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, DISPATCH_QUEUE_PRIORITY_DEFAULT);
+        queue = dispatch_queue_create("FCReachability", attrs);
+
+        // initial state: assume online, but don't assume Wi-Fi until we know
+        self.isOnline = wasOnline = YES;
+        self.isCellular = wasCellular = YES;
+        self.isExpensive = wasExpensive = YES;
+        self.isConstrained = wasConstrained = YES;
+        self.isUnrestricted = NO;
+
+        monitor = nw_path_monitor_create();
+        nw_path_monitor_set_queue(monitor, queue);
+
+        __weak typeof(self) weakSelf = self;
+        nw_path_monitor_set_update_handler(monitor, ^(nw_path_t path) {
+            __strong typeof(self) strongSelf = weakSelf;
+            if (! strongSelf) return;
+            
+            BOOL isOnline = nw_path_get_status(path) == nw_path_status_satisfied;
+            strongSelf.isOnline = isOnline;
+            strongSelf.isCellular = strongSelf.isOnline && nw_path_uses_interface_type(path, nw_interface_type_cellular);
+            strongSelf.isExpensive = strongSelf.isOnline && nw_path_is_expensive(path);
+
+            if (@available(macos 10.15, ios 13.0, watchos 6.0, tvos 13.0, *)) {
+                strongSelf.isConstrained = strongSelf.isOnline && nw_path_is_constrained(path);
+            } else {
+                strongSelf.isConstrained = NO;
+            }
+            
+            strongSelf.isUnrestricted = isOnline && ! (strongSelf.isCellular || strongSelf.isExpensive || strongSelf.isConstrained);
+            
+            BOOL onlineChanged = (strongSelf->wasOnline != isOnline);
+            BOOL statusChanged = onlineChanged || (strongSelf.isCellular != strongSelf->wasCellular) || (strongSelf.isExpensive != strongSelf->wasExpensive) || (strongSelf.isConstrained != strongSelf->wasConstrained);
+            strongSelf->wasOnline = isOnline;
+            strongSelf->wasCellular = strongSelf.isCellular;
+            strongSelf->wasExpensive = strongSelf.isExpensive;
+            strongSelf->wasConstrained = strongSelf.isConstrained;
+                        
+            if (statusChanged && ! strongSelf->isSettingInitialState) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityChangedNotification object:strongSelf userInfo:nil];
+                    if (onlineChanged && isOnline) {
+                        [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOnlineNotification object:strongSelf userInfo:nil];
+                    }
+                });
+            }
+        });
+
+        isSettingInitialState = YES;
+        nw_path_monitor_start(monitor);
+        dispatch_sync(queue, ^{ }); // wait for initial state if it's queued synchronously in nw_path_monitor_start, which seems true
+        isSettingInitialState = NO;
     }
     return self;
 }
 
-- (BOOL)isOnline { return isOnline; }
-
-- (BOOL)allowCellular { return ! requireWiFi; }
-- (void)setAllowCellular:(BOOL)allowCellular
-{
-    if (requireWiFi == allowCellular) {
-        requireWiFi = ! allowCellular;
-        fc_executeOnMainThread(^{
-            [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityCellularPolicyChangedNotification object:self];
-        });
-        [self update];
-    }
-}
-
-- (void)update
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        BOOL nowOnline = self.status == FCReachabilityStatusOnlineViaWiFi || (! requireWiFi && self.status == FCReachabilityStatusOnlineViaCellular);
-        
-        if (nowOnline && ! isOnline) {
-            isOnline = YES;
-            if (_previousStatus != FCReachabilityStatusUnknown) [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOnlineNotification object:self];
-        } else if (! nowOnline && isOnline) {
-            isOnline = NO;
-            if (_previousStatus != FCReachabilityStatusUnknown) [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityOfflineNotification object:self];
-        }
-        
-        [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityStatusChangedNotification object:self];
-    });
-}
-
 - (BOOL)internetConnectionIsOfflineForError:(NSError *)error
 {
-    if (error && (error.code == kCFURLErrorNotConnectedToInternet || error.code == kCFURLErrorNetworkConnectionLost)) {
-        [self update];
-        return YES;
-    } else {
-        return NO;
-    }
-}
-
-#pragma mark - Reachability support
-
-- (void)setReachabilityHostname:(NSString *)hostname
-{
-    if (reachability) {
-        SCNetworkReachabilitySetCallback(reachability, NULL, NULL);
-        CFRelease(reachability);
-        reachability = NULL;
-    }
-    
-    if (hostname) {
-        reachability = SCNetworkReachabilityCreateWithName(NULL, [hostname UTF8String]);
-        if (! reachability) return;
-        SCNetworkReachabilityContext context = { 0, (__bridge void *) self, NULL, NULL, NULL };
-        SCNetworkReachabilitySetCallback(reachability, FCReachabilityChanged, &context);
-        SCNetworkReachabilityScheduleWithRunLoop(reachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);
-    }
-}
-
-- (void)dealloc
-{
-    if (reachability) {
-        SCNetworkReachabilitySetCallback(reachability, NULL, NULL);
-        SCNetworkReachabilityUnscheduleFromRunLoop(reachability, CFRunLoopGetMain(), kCFRunLoopCommonModes);
-        CFRelease(reachability);
-        reachability = NULL;
-    }
+    return (error && (error.code == NSURLErrorNotConnectedToInternet || error.code == NSURLErrorNetworkConnectionLost));
 }
 
 @end
