@@ -15,6 +15,9 @@
 // Use the fc_decodedImageFromData:… methods in UIImage+FCUtilities.h instead of UIImage-based processing or rendering.
 + (void)setFetchedImageDecoder:(UIImage * (^)(NSData *imageData))block;
 
+// Optional. Called after each completed request to report its data usage.
++ (void)setDataTransferHandler:(void (^)(int64_t totalBytesTransferred, int64_t cellularBytesTransferred))dataTransferHandler;
+
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder;
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy;
 

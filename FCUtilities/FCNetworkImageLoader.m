@@ -29,6 +29,7 @@
 @property (nonatomic) dispatch_queue_t decodeQueue;
 @property (nonatomic, copy) BOOL (^cellularPolicyHandler)(void);
 @property (nonatomic, copy) UIImage *(^fetchedImageDecoder)(NSData *imageData);
+@property (nonatomic, copy) void (^dataTransferHandler)(int64_t totalBytesTransferred, int64_t cellularBytesTransferred);
 + (instancetype)sharedInstance;
 @end
 
@@ -50,6 +51,11 @@
 + (void)setFetchedImageDecoder:(UIImage * (^)(NSData *imageData))block
 {
     FCNetworkImageLoader.sharedInstance.fetchedImageDecoder = block;
+}
+
++ (void)setDataTransferHandler:(void (^)(int64_t totalBytesTransferred, int64_t cellularBytesTransferred))dataTransferHandler
+{
+    FCNetworkImageLoader.sharedInstance.dataTransferHandler = dataTransferHandler;
 }
 
 - (instancetype)init
@@ -79,6 +85,20 @@
     }
     completionHandler(proposedResponse);
 }
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics
+{
+    int64_t bytesTransferred = 0;
+    int64_t cellularBytesTransferred = 0;
+    for (NSURLSessionTaskTransactionMetrics *tm in metrics.transactionMetrics) {
+        int64_t total = tm.countOfRequestHeaderBytesSent + tm.countOfRequestBodyBytesSent + tm.countOfResponseHeaderBytesReceived + tm.countOfResponseBodyBytesReceived;
+        bytesTransferred += total;
+        if (tm.isCellular) cellularBytesTransferred += total;
+    }
+
+    if (self.dataTransferHandler) self.dataTransferHandler(bytesTransferred, cellularBytesTransferred);
+}
+
 
 + (void)setCachedImageLimit:(NSUInteger)imageCount
 {
