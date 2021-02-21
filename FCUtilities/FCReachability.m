@@ -62,12 +62,7 @@ NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotifi
             strongSelf.isOnline = isOnline;
             strongSelf.isCellular = strongSelf.isOnline && nw_path_uses_interface_type(path, nw_interface_type_cellular);
             strongSelf.isExpensive = strongSelf.isOnline && nw_path_is_expensive(path);
-
-            if (@available(macos 10.15, ios 13.0, watchos 6.0, tvos 13.0, *)) {
-                strongSelf.isConstrained = strongSelf.isOnline && nw_path_is_constrained(path);
-            } else {
-                strongSelf.isConstrained = NO;
-            }
+            strongSelf.isConstrained = strongSelf.isOnline && nw_path_is_constrained(path);
             
             strongSelf.isUnrestricted = isOnline && ! (strongSelf.isCellular || strongSelf.isExpensive || strongSelf.isConstrained);
             
