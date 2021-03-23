@@ -41,6 +41,7 @@ inline __attribute__((always_inline)) NSString *fc_dictionaryValueToString(NSObj
 
 // If we're currently on the main thread, run block() sync, otherwise dispatch block() async to main thread.
 void fc_executeOnMainThread(void (^block)(void));
+void fc_executeOnMainThreadSync(void (^block)(void)); // Same deal, but dispatches block() sync instead of async (be careful!)
 
 inline __attribute((always_inline)) uint64_t fc_random_int64()
 {
