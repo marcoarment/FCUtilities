@@ -93,7 +93,7 @@ NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotifi
 
 - (BOOL)internetConnectionIsOfflineForError:(NSError *)error
 {
-    return (error && (error.code == NSURLErrorNotConnectedToInternet || error.code == NSURLErrorNetworkConnectionLost));
+    return (error && (error.code == NSURLErrorNotConnectedToInternet || error.code == NSURLErrorNetworkConnectionLost || error.code == NSURLErrorDataNotAllowed));
 }
 
 @end
