@@ -5,6 +5,7 @@
 
 #import "FCReachability.h"
 @import Network;
+#import <stdatomic.h>
 
 NSString * const FCReachabilityChangedNotification = @"FCReachabilityChangedNotification";
 NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotification";
@@ -16,7 +17,7 @@ NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotifi
     BOOL wasCellular;
     BOOL wasExpensive;
     BOOL wasConstrained;
-    BOOL isSettingInitialState;
+    atomic_bool isSettingInitialState;
 }
 @property (nonatomic) BOOL isOnline;
 @property (nonatomic) BOOL isCellular;
@@ -73,7 +74,7 @@ NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotifi
             strongSelf->wasExpensive = strongSelf.isExpensive;
             strongSelf->wasConstrained = strongSelf.isConstrained;
                         
-            if (statusChanged && ! strongSelf->isSettingInitialState) {
+            if (statusChanged && ! atomic_load(&strongSelf->isSettingInitialState)) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [NSNotificationCenter.defaultCenter postNotificationName:FCReachabilityChangedNotification object:strongSelf userInfo:nil];
                     if (onlineChanged && isOnline) {
@@ -83,10 +84,10 @@ NSString * const FCReachabilityOnlineNotification = @"FCReachabilityOnlineNotifi
             }
         });
 
-        isSettingInitialState = YES;
+        atomic_store(&isSettingInitialState, true);
         nw_path_monitor_start(monitor);
         dispatch_sync(queue, ^{ }); // wait for initial state if it's queued synchronously in nw_path_monitor_start, which seems true
-        isSettingInitialState = NO;
+        atomic_store(&isSettingInitialState, false);
     }
     return self;
 }
