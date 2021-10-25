@@ -215,6 +215,11 @@
 
 - (UIImage *)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)borderCornerRadius borderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth
 {
+    return [self fc_imageWithJonyIveRoundedCornerRadius:borderCornerRadius borderColor:borderColor borderWidth:borderWidth backgroundColor:nil];
+}
+
+- (UIImage *)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)borderCornerRadius borderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth backgroundColor:(UIColor *)backgroundColor
+{
     CGFloat halfBorderWidth = borderWidth / 2.0f;
     CGRect outputRect = CGRectMake(0, 0, self.size.width, self.size.height);
     CGRect imageRect = CGRectInset(outputRect, borderWidth, borderWidth);
@@ -225,6 +230,10 @@
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextSaveGState(ctx);
     [[UIBezierPath bezierPathWithRoundedRect:imageRect byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(imageCornerRadius, imageCornerRadius)] addClip];
+    if (backgroundColor) {
+        [backgroundColor setFill];
+        [[UIBezierPath bezierPathWithRect:outputRect] fill];
+    }
     [self drawInRect:imageRect];
     CGContextRestoreGState(ctx);
 

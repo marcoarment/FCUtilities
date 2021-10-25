@@ -39,6 +39,7 @@
 - (UIImage * _Nonnull)fc_imageWithRoundedCornerRadius:(CGFloat)cornerRadius;
 - (UIImage * _Nonnull)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)cornerRadius;
 - (UIImage * _Nonnull)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)cornerRadius borderColor:(UIColor * _Nonnull)borderColor borderWidth:(CGFloat)borderWidth;
+- (UIImage * _Nonnull)fc_imageWithJonyIveRoundedCornerRadius:(CGFloat)cornerRadius borderColor:(UIColor * _Nonnull)borderColor borderWidth:(CGFloat)borderWidth backgroundColor:(UIColor * _Nullable)backgroundColor;
 - (UIImage * _Nonnull)fc_imagePaddedWithColor:(UIColor * _Nonnull)color insets:(UIEdgeInsets)insets;
 
 
