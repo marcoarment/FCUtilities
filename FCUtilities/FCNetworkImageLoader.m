@@ -102,16 +102,20 @@
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder
 {
-    [self loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:NSURLRequestUseProtocolCachePolicy];
+    [self loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:NSURLRequestUseProtocolCachePolicy imageTransformer:nil];
 }
 
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy
 {
-
-    [FCNetworkImageLoader.sharedInstance _loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:cachePolicy];
+    [self loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:cachePolicy imageTransformer:nil];
 }
 
-- (void)_loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy
++ (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy imageTransformer:(UIImage * _Nonnull (^ _Nullable)(UIImage * _Nonnull image, UIImageView * _Nonnull imageView))imageTransformer
+{
+    [FCNetworkImageLoader.sharedInstance _loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:cachePolicy imageTransformer:imageTransformer];
+}
+
+- (void)_loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy imageTransformer:(UIImage * _Nonnull (^ _Nullable)(UIImage * _Nonnull image, UIImageView * _Nonnull imageView))imageTransformer
 {
     os_unfair_lock_lock((os_unfair_lock * _Nonnull) &(writeLock));
     
@@ -125,7 +129,11 @@
     }
     
     if (cachedImage) {
-        dispatch_async(dispatch_get_main_queue(), ^{ imageView.image = cachedImage; });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIImage *imageToDisplay = cachedImage;
+            if (imageTransformer) imageToDisplay = imageTransformer(imageToDisplay, imageView);
+            imageView.image = imageToDisplay;
+        });
         os_unfair_lock_unlock((os_unfair_lock * _Nonnull) &writeLock);
         return;
     }
@@ -152,7 +160,11 @@
             [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:url.absoluteString];
             BOOL current = [strongImageView.fcNetworkImageLoader_downloadTask.originalRequest.URL isEqual:url];
             os_unfair_lock_unlock((os_unfair_lock * _Nonnull) &writeLock);
-            if (current) dispatch_async(dispatch_get_main_queue(), ^{ strongImageView.image = image; });
+            if (current) dispatch_async(dispatch_get_main_queue(), ^{
+                UIImage *imageToDisplay = image;
+                if (imageTransformer) imageToDisplay = imageTransformer(imageToDisplay, imageView);
+                strongImageView.image = imageToDisplay;
+            });
         });
     }];
     imageView.fcNetworkImageLoader_downloadTask = task;
