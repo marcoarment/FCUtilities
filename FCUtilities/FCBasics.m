@@ -23,16 +23,3 @@ void fc_executeOnMainThread(void (^block)(void))
     }
 }
 
-void fc_executeOnMainThreadSync(void (^block)(void))
-{
-    dispatch_once(&fc_mainThreadOnceToken, ^{
-        dispatch_queue_set_specific(dispatch_get_main_queue(), &fc_mainThreadOnceToken, &fc_mainThreadOnceToken, NULL);
-    });
-
-    if (dispatch_get_specific(&fc_mainThreadOnceToken) == &fc_mainThreadOnceToken) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
-
