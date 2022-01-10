@@ -141,6 +141,11 @@ static void *UIColorFCUtilitiesIdentifierKey = &UIColorFCUtilitiesIdentifierKey;
 	return fc_UIColorFromHexInt(hexNum);
 }
 
+- (UIColor *)fc_opaqueColorByBlendingWithBackgroundColor:(UIColor *)backgroundColor
+{
+    return [backgroundColor fc_colorByBlendingWithColor:self];
+}
+
 // adaptation of https://stackoverflow.com/a/18903483/30480
 - (UIColor *)fc_colorByBlendingWithColor:(UIColor *)color2
 {

@@ -22,6 +22,7 @@
 - (NSString * _Nonnull)fc_CSSColor;
 + (UIColor * _Nullable)fc_colorWithHexString:(NSString * _Nullable)hexString;
 - (UIColor * _Nullable)fc_colorByBlendingWithColor:(UIColor * _Nullable)color2;
+- (UIColor * _Nullable)fc_opaqueColorByBlendingWithBackgroundColor:(UIColor * _Nonnull)backgroundColor;
 
 #ifdef SUPPORT_DUMPING_COLOR_VALUES
 #if TARGET_OS_IOS

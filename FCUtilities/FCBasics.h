@@ -84,3 +84,25 @@ inline __attribute__((always_inline)) CGRect fc_safeCGRectInset(CGRect rect, CGF
     return rect;
 }
 
+inline __attribute__((always_inline)) CGRect fc_aspectFitRect(CGRect outerRect, CGSize innerSize) {
+
+    // the width and height ratios of the rects
+    CGFloat wRatio = outerRect.size.width/innerSize.width;
+    CGFloat hRatio = outerRect.size.height/innerSize.height;
+
+    // calculate scaling ratio based on the smallest ratio.
+    CGFloat ratio = (wRatio < hRatio)? wRatio:hRatio;
+
+    // The x-offset of the inner rect as it gets centered
+    CGFloat xOffset = (outerRect.size.width-(innerSize.width*ratio))*0.5;
+
+    // The y-offset of the inner rect as it gets centered
+    CGFloat yOffset = (outerRect.size.height-(innerSize.height*ratio))*0.5;
+
+    // aspect fitted origin and size
+    CGPoint innerRectOrigin = {xOffset+outerRect.origin.x, yOffset+outerRect.origin.y};
+    innerSize = (CGSize) {innerSize.width*ratio, innerSize.height*ratio};
+
+    return (CGRect){innerRectOrigin, innerSize};
+}
+
