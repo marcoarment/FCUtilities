@@ -70,6 +70,8 @@ typedef NS_ENUM(NSInteger, FCUserInterfaceStyle) {
 + (UIColor * _Nonnull)fc_systemBackgroundColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_secondarySystemGroupedBackgroundColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_secondaryLabelColorWithTheme:(FCUserInterfaceStyle)theme;
++ (UIColor * _Nonnull)fc_separatorColorWithTheme:(FCUserInterfaceStyle)theme;
++ (UIColor * _Nonnull)fc_linkColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_tertiarySystemFillColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_systemFillColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_secondarySystemFillColorWithTheme:(FCUserInterfaceStyle)theme;
@@ -88,6 +90,8 @@ typedef NS_ENUM(NSInteger, FCUserInterfaceStyle) {
 + (UIColor * _Nonnull)fc_systemIndigoColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_systemBrownColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_quaternaryLabelColorWithTheme:(FCUserInterfaceStyle)theme;
++ (UIColor * _Nonnull)fc_placeholderTextColorWithTheme:(FCUserInterfaceStyle)theme;
++ (UIColor * _Nonnull)fc_opaqueSeparatorColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_quaternarySystemFillColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_systemGray2ColorWithTheme:(FCUserInterfaceStyle)theme;
 + (UIColor * _Nonnull)fc_systemGray3ColorWithTheme:(FCUserInterfaceStyle)theme;
