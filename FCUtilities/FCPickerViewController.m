@@ -37,7 +37,7 @@
 
 - (instancetype)initWithTitle:(NSString *)title items:(NSArray *)items itemLabelBlock:(NSString *(^)(id item))itemLabelBlock pickedBlock:(void (^)(NSUInteger idx))pickedBlock currentSelection:(NSUInteger)currentSelection
 {
-    if ( (self = [super initWithStyle:UITableViewStyleGrouped]) ) {
+    if ( (self = [super initWithStyle:UITableViewStyleInsetGrouped]) ) {
     
         NSMutableArray *filteredItems = [NSMutableArray array];
         NSMutableArray *sections = [NSMutableArray array];
@@ -102,7 +102,11 @@
 {
     NSString *titleStr = sectionTitles[section];
     if (! titleStr.length) return nil;
-    return [self viewForSectionHeaderWithTitle:sectionTitles[section] width:tableView.bounds.size.width];
+    
+    CGFloat tableWidth = tableView.bounds.size.width;
+    if (tableView.style == UITableViewStyleInsetGrouped) tableWidth -= 40.0f;
+    
+    return [self viewForSectionHeaderWithTitle:sectionTitles[section] width:tableWidth];
 }
 
 
