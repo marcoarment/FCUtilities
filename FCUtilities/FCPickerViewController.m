@@ -94,8 +94,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    UIView *titleView = [self tableView:tableView viewForHeaderInSection:section];
-    return titleView ? titleView.bounds.size.height : 44;
+    return [self tableView:tableView viewForHeaderInSection:section].bounds.size.height ?: 36.0f;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
