@@ -4,12 +4,7 @@
 //
 
 #import "UIColor+FCUtilities.h"
-
-#ifdef SUPPORT_DUMPING_COLOR_VALUES
-#if TARGET_OS_IOS
 #import <objc/runtime.h>
-#endif
-#endif
 
 static void *UIColorFCUtilitiesIdentifierKey = &UIColorFCUtilitiesIdentifierKey;
 
