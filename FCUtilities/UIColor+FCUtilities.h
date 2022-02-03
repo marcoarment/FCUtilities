@@ -24,6 +24,9 @@
 - (UIColor * _Nullable)fc_colorByBlendingWithColor:(UIColor * _Nullable)color2;
 - (UIColor * _Nullable)fc_opaqueColorByBlendingWithBackgroundColor:(UIColor * _Nonnull)backgroundColor;
 
+- (CGFloat)fc_apcaContrastAgainstBackgroundColor:(UIColor * _Nonnull)backgroundColor;
+- (UIColor * _Nonnull)fc_colorWithMinimumAPCAContrast:(CGFloat)minContrast againstBackgroundColor:(UIColor * _Nonnull)backgroundColor changed:(out BOOL * _Nullable)outColorDidChange;
+
 #ifdef SUPPORT_DUMPING_COLOR_VALUES
 #if TARGET_OS_IOS
 + (void)fc_dumpSystemColorValues;

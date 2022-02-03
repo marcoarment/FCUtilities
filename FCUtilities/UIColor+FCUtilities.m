@@ -118,6 +118,58 @@ static void *UIColorFCUtilitiesIdentifierKey = &UIColorFCUtilitiesIdentifierKey;
     return [UIColor colorWithHue:hue saturation:saturation brightness:brightness alpha:alpha];
 }
 
+- (CGFloat)fc_apcaLuminance /* "Y" from https://github.com/Myndex/SAPC-APCA/ and https://www.w3.org/WAI/GL/task-forces/silver/wiki/Visual_Contrast_of_Text_Subgroup/APCA_model */
+{
+    CGFloat r, g, b, a;
+    [self fc_getRed:&r green:&g blue:&b alpha:&a];
+    return powf(r / 1.0f, 2.4f) * 0.2126729f + powf(g / 1.0f, 2.4f) * 0.7151522f + powf(b / 1.0f, 2.4f) * 0.0721750f;
+}
+
+- (CGFloat)fc_apcaContrastAgainstBackgroundColor:(UIColor *)backgroundColor
+{
+    UIColor *textColor = [self fc_opaqueColorByBlendingWithBackgroundColor:backgroundColor];
+    CGFloat textY = textColor.fc_apcaLuminance;
+    CGFloat backgroundY = backgroundColor.fc_apcaLuminance;
+
+    // adapted from https://github.com/Myndex/SAPC-APCA/blob/master/src/JS/SAPC_0_98G_4g_minimal.js
+
+    const CGFloat clampThreshold = 0.22f;
+    if (textY <= clampThreshold)       { textY += powf(clampThreshold - textY,       1.414f); }
+    if (backgroundY <= clampThreshold) { textY += powf(clampThreshold - backgroundY, 1.414f); }
+
+    if (ABS(backgroundY - textY) < 0.0005f) return 0;
+    
+    CGFloat sapc = backgroundY > textY ? powf(backgroundY, 0.56f) - powf(textY, 0.57f) : powf(backgroundY, 0.65f) - powf(textY, 0.62f);
+
+    if (sapc < 0.001f)    return 0;
+    if (sapc < 0.035991f) return sapc - sapc * 27.7847239587675f * 0.027f;
+    return sapc - 0.027f;
+}
+
+- (UIColor * _Nonnull)fc_colorWithMinimumAPCAContrast:(CGFloat)minContrast againstBackgroundColor:(UIColor *)backgroundColor changed:(out BOOL *)outColorDidChange
+{
+    if (outColorDidChange) *outColorDidChange = NO;
+    BOOL adjustmentDirectionDarken = (backgroundColor.fc_apcaLuminance > self.fc_apcaLuminance);
+    UIColor *color = self;
+    CGFloat lastContrast = 0.0f;
+    CGFloat contrast;
+    while ( (contrast = [color fc_apcaContrastAgainstBackgroundColor:backgroundColor]) < minContrast) {
+        if (contrast == lastContrast) { /* not improving anymore; bail out */ return color; }
+        color = [color fc_colorByModifyingHSBA:^(CGFloat * _Nonnull hue, CGFloat * _Nonnull saturation, CGFloat * _Nonnull brightness, CGFloat * _Nonnull alpha) {
+            if (adjustmentDirectionDarken) {
+                *brightness *= 0.975f;
+                *saturation *= 1.1f;
+            } else {
+                *brightness *= 1.05f;
+                *saturation *= 0.9f;
+            }
+        }];
+        if (outColorDidChange) *outColorDidChange = YES;
+        lastContrast = contrast;
+    }
+    return color;
+}
+
 - (NSString *)fc_CSSColor
 {
     CGFloat r, g, b, a;
