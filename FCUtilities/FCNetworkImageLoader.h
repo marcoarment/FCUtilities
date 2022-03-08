@@ -20,7 +20,7 @@
 
 + (void)loadImageAtURL:(NSURL * _Nonnull)url intoImageView:(UIImageView * _Nonnull)imageView placeholderImage:(UIImage * _Nullable)placeholder;
 + (void)loadImageAtURL:(NSURL * _Nonnull)url intoImageView:(UIImageView * _Nonnull)imageView placeholderImage:(UIImage * _Nullable)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy;
-+ (void)loadImageAtURL:(NSURL * _Nonnull)url intoImageView:(UIImageView * _Nonnull)imageView placeholderImage:(UIImage * _Nullable)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy imageTransformer:(UIImage * _Nonnull (^ _Nullable)(UIImage * _Nonnull image, UIImageView * _Nonnull imageView))imageTransformer;
++ (void)loadImageAtURL:(NSURL * _Nonnull)url intoImageView:(UIImageView * _Nonnull)imageView placeholderImage:(UIImage * _Nullable)placeholder cachePolicy:(NSURLRequestCachePolicy)cachePolicy imageTransformer:(UIImage * _Nonnull (^ _Nullable)(UIImage * _Nonnull image, CGSize imageViewSize))imageTransformer;
 
 + (void)cancelLoadForImageView:(UIImageView * _Nonnull)imageView;
 + (void)setCachedImageLimit:(NSUInteger)imageCount;
