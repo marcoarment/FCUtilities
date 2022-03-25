@@ -9,6 +9,4 @@ extern NSString *const FCActivityTypeOpenInSafari;
 
 @interface FCOpenInSafariActivity : UIActivity
 
-+ (UIImage *)alphaSafariIconWithWidth:(CGFloat)width scale:(CGFloat)scale;
-
 @end
