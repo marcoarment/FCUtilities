@@ -5,12 +5,10 @@
 
 #import "FCNetworkImageLoader.h"
 #import "UIImage+FCUtilities.h"
-#import "FCCache.h"
 #import <os/lock.h>
 
 @interface UIImageView (FCNetworkImageLoader)
 @property (nonatomic, strong) NSURLSessionTask *fcNetworkImageLoader_downloadTask;
-@property (nonatomic, strong) UIImage *fcNetworkImageLoader_cachedImageLoadInProgress;
 @end
 
 #import <objc/runtime.h>
@@ -21,20 +19,12 @@
 {
     objc_setAssociatedObject(self, @selector(fcNetworkImageLoader_downloadTask), downloadTask, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
-
-- (UIImage *)fcNetworkImageLoader_cachedImageLoadInProgress { return objc_getAssociatedObject(self, @selector(fcNetworkImageLoader_cachedImageLoadInProgress)); }
-- (void)setFcNetworkImageLoader_cachedImageLoadInProgress:(UIImage *)image
-{
-    objc_setAssociatedObject(self, @selector(fcNetworkImageLoader_cachedImageLoadInProgress), image, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
 @end
 
 @interface FCNetworkImageLoader () <NSURLSessionDataDelegate> {
 @public
     os_unfair_lock writeLock;
 }
-@property (nonatomic) FCCache *imageCache;
 @property (nonatomic) NSURLSession *session;
 @property (nonatomic) dispatch_queue_t decodeQueue;
 @property (nonatomic, copy) BOOL (^cellularPolicyHandler)(void);
@@ -71,7 +61,6 @@
 - (instancetype)init
 {
     if ( (self = [super init]) ) {
-        self.imageCache = [[FCCache alloc] init];
         writeLock = OS_UNFAIR_LOCK_INIT;
         self.decodeQueue = dispatch_queue_create("FCNetworkImageLoader-decode", DISPATCH_QUEUE_CONCURRENT);
         self.session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
@@ -103,11 +92,6 @@
 }
 
 
-+ (void)setCachedImageLimit:(NSUInteger)imageCount
-{
-    ((FCNetworkImageLoader *) [self sharedInstance]).imageCache.itemLimit = imageCount;
-}
-
 + (void)loadImageAtURL:(NSURL *)url intoImageView:(UIImageView *)imageView placeholderImage:(UIImage *)placeholder
 {
     [self loadImageAtURL:url intoImageView:imageView placeholderImage:placeholder cachePolicy:NSURLRequestUseProtocolCachePolicy imageTransformer:nil];
@@ -127,7 +111,6 @@
 {
     os_unfair_lock_lock((os_unfair_lock * _Nonnull) &(writeLock));
     
-    UIImage *cachedImage = [self.imageCache objectForKey:url.absoluteString];
     NSURLSessionTask *alreadyDownloadingTask = imageView.fcNetworkImageLoader_downloadTask;
     BOOL alreadyDownloadingThisURL = alreadyDownloadingTask && [alreadyDownloadingTask.originalRequest.URL isEqual:url];
     
@@ -139,25 +122,7 @@
     __weak typeof(self) weakSelf = self;
     __weak UIImageView *weakImageView = imageView;
 
-    if (cachedImage) {
-        CGSize imageViewSize = imageView.bounds.size;
-        imageView.fcNetworkImageLoader_cachedImageLoadInProgress = cachedImage;
-        dispatch_async(_decodeQueue, ^{
-            __strong typeof(self) strongSelf = weakSelf;
-            __strong UIImageView *strongImageView = weakImageView;
-            if (! strongSelf || ! strongImageView || strongImageView.fcNetworkImageLoader_cachedImageLoadInProgress != cachedImage) return;
-
-            UIImage *imageToDisplay = cachedImage;
-            if (imageTransformer) imageToDisplay = imageTransformer(imageToDisplay, imageViewSize);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                imageView.image = imageToDisplay;
-            });
-        });
-        os_unfair_lock_unlock((os_unfair_lock * _Nonnull) &writeLock);
-        return;
-    }
-
-    if (placeholder && ! alreadyDownloadingThisURL) dispatch_async(dispatch_get_main_queue(), ^{ imageView.image = placeholder; });
+    if (placeholder && ! alreadyDownloadingThisURL) imageView.image = placeholder;
 
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url cachePolicy:cachePolicy timeoutInterval:30];
     BOOL (^cellularHandler)(void) = FCNetworkImageLoader.sharedInstance.cellularPolicyHandler;
@@ -177,7 +142,6 @@
                 if (! image) return;
 
                 os_unfair_lock_lock((os_unfair_lock * _Nonnull) &writeLock);
-                [FCNetworkImageLoader.sharedInstance.imageCache setObject:image forKey:url.absoluteString];
                 BOOL current = [strongImageView.fcNetworkImageLoader_downloadTask.originalRequest.URL isEqual:url];
                 os_unfair_lock_unlock((os_unfair_lock * _Nonnull) &writeLock);
                 if (current) {
