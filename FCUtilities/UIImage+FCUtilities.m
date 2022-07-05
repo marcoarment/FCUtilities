@@ -4,7 +4,7 @@
 //
 
 #import "UIImage+FCUtilities.h"
-@import CoreServices;
+@import UniformTypeIdentifiers;
 
 @implementation UIImage (FCUtilities)
 
@@ -30,10 +30,11 @@
     if (onlyIfCommonSourceFormat) {
         // JPEG and PNG only to avoid huge CPU/RAM usage when using more-obscure, less-optimized formats like JPEG 2000
         CFStringRef uti = CGImageSourceGetType(imageSource);
-        if (! uti || (
-            ! UTTypeConformsTo(uti, kUTTypeJPEG) &&
-            ! UTTypeConformsTo(uti, kUTTypePNG) &&
-            ! UTTypeConformsTo(uti, kUTTypeGIF)
+        UTType *utt = uti ? [UTType typeWithIdentifier:(__bridge NSString * _Nonnull)(uti)] : nil;
+        if (! utt || (
+            ! [utt conformsToType:UTTypeJPEG] &&
+            ! [utt conformsToType:UTTypePNG] &&
+            ! [utt conformsToType:UTTypeGIF]
         )) {
             CFRelease(imageSource);
             return nil;
