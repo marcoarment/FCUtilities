@@ -216,6 +216,7 @@ static void *UIColorFCUtilitiesIdentifierKey = &UIColorFCUtilitiesIdentifierKey;
 {
     NSMutableString *hFile = @"+ (UIColor * _Nullable)fc_systemColorWithName:(NSString * _Nonnull)name theme:(FCUserInterfaceStyle)theme;\n".mutableCopy;
     NSMutableString *cFile = @"".mutableCopy;
+    NSMutableString *swiftUIFile = @"import SwiftUI\n\nextension Color {\n".mutableCopy;
 
     NSMutableArray *systemColorMethodNames = [NSMutableArray array];
     int unsigned numMethods;
@@ -259,15 +260,24 @@ static void *UIColorFCUtilitiesIdentifierKey = &UIColorFCUtilitiesIdentifierKey;
         [cFile appendFormat:@"+ (UIColor * _Nonnull)fc_%@WithTheme:(FCUserInterfaceStyle)theme { return [(theme == FCUserInterfaceStyleDark ? [UIColor colorWithRed:%0.6ff green:%0.6ff blue:%0.6ff alpha:%0.6ff] : [UIColor colorWithRed:%0.6ff green:%0.6ff blue:%0.6ff alpha:%0.6ff]) fc_withSystemName:@\"%@\"]; }\n", name, darkR, darkG, darkB, darkA, lightR, lightG, lightB, lightA, name];
         
         [byNameMethodBody appendFormat:@"    if ([name isEqualToString:@\"%@\"]) { return [(theme == FCUserInterfaceStyleDark ? [UIColor colorWithRed:%0.6ff green:%0.6ff blue:%0.6ff alpha:%0.6ff] : [UIColor colorWithRed:%0.6ff green:%0.6ff blue:%0.6ff alpha:%0.6ff]) fc_withSystemName:@\"%@\"]; }\n", name, darkR, darkG, darkB, darkA, lightR, lightG, lightB, lightA, name];
+        
+        [swiftUIFile appendFormat:@"    static func %@(_ scheme: ColorScheme) -> Color { scheme == .dark ? Color(red: %g, green: %g, blue: %g, opacity: %g) : Color(red: %g, green: %g, blue: %g, opacity: %g) }\n",
+            [name fc_substringBefore:@"Color" fromEnd:YES], darkR, darkG, darkB, darkA, lightR, lightG, lightB, lightA
+        ];
     }
     
     [cFile appendFormat:@"\n+ (UIColor * _Nullable)fc_systemColorWithName:(NSString * _Nonnull)name theme:(FCUserInterfaceStyle)theme {\n%@\n    return nil;\n}\n", byNameMethodBody];
-    
+
+    [swiftUIFile appendString:@"}\n"];
+
     NSError *error = NULL;
     [hFile writeToFile:@"/tmp/UIColor+FCUtilities+SystemColors.h" atomically:NO encoding:NSUTF8StringEncoding error:&error];
     if (error) [[NSException exceptionWithName:@"ColorDumpFailed" reason:error.localizedDescription userInfo:nil] raise];
 
     [cFile writeToFile:@"/tmp/UIColor+FCUtilities+SystemColors.c" atomically:NO encoding:NSUTF8StringEncoding error:NULL];
+    if (error) [[NSException exceptionWithName:@"ColorDumpFailed" reason:error.localizedDescription userInfo:nil] raise];
+
+    [swiftUIFile writeToFile:@"/tmp/Color+FCUtilities+SystemColors.swift" atomically:NO encoding:NSUTF8StringEncoding error:NULL];
     if (error) [[NSException exceptionWithName:@"ColorDumpFailed" reason:error.localizedDescription userInfo:nil] raise];
 }
 #endif
