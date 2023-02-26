@@ -42,7 +42,7 @@ inline __attribute__((always_inline)) NSString *fc_dictionaryValueToString(NSObj
 // If we're currently on the main thread, run block() sync, otherwise dispatch block() async to main thread.
 void fc_executeOnMainThread(void (^block)(void));
 
-inline __attribute((always_inline)) uint64_t fc_random_int64()
+inline __attribute((always_inline)) uint64_t fc_random_int64(void)
 {
     uint64_t urandom;
     if (0 != SecRandomCopyBytes(kSecRandomDefault, sizeof(uint64_t), (uint8_t *) (&urandom))) {
@@ -52,7 +52,7 @@ inline __attribute((always_inline)) uint64_t fc_random_int64()
     return urandom;
 }
 
-inline __attribute((always_inline)) uint32_t fc_random_int32()
+inline __attribute((always_inline)) uint32_t fc_random_int32(void)
 {
     uint32_t urandom;
     if (0 != SecRandomCopyBytes(kSecRandomDefault, sizeof(uint32_t), (uint8_t *) (&urandom))) {
