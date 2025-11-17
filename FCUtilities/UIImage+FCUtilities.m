@@ -173,6 +173,7 @@
 
 + (UIImage *)fc_imageWithSize:(CGSize)size drawing:(void (^)(void))drawingCommands
 {
+    if (size.width == 0 || size.height == 0) return nil;
     UIGraphicsBeginImageContextWithOptions(size, NO, [UIScreen mainScreen].scale);
     drawingCommands();
     UIImage *finalImage = UIGraphicsGetImageFromCurrentImageContext();
