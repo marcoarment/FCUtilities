@@ -136,6 +136,12 @@
             __strong UIImageView *strongImageView = weakImageView;
             if (! strongSelf || ! strongImageView || ! data || ! response || error || ! [strongImageView.fcNetworkImageLoader_downloadTask.originalRequest.URL isEqual:url]) return;
 
+            NSHTTPURLResponse *http = [response isKindOfClass:[NSHTTPURLResponse class]] ? (NSHTTPURLResponse *)response : nil;
+            if (http && (http.statusCode < 200 || http.statusCode >= 300)) return;
+
+            NSString *mimeType = response.MIMEType.lowercaseString;
+            if ([mimeType hasPrefix:@"text/html"]) return;
+
             dispatch_async(strongSelf.decodeQueue, ^{
                 UIImage *(^imageDecoder)(NSData *image) = FCNetworkImageLoader.sharedInstance.fetchedImageDecoder;
                 UIImage *image = imageDecoder ? imageDecoder(data) : [UIImage fc_decodedImageFromData:data];

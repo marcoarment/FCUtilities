@@ -8,6 +8,34 @@
 
 @implementation UIImage (FCUtilities)
 
+static BOOL FCDataLooksLikeHTMLDocument(NSData *data) {
+    if (data.length < 4) return NO;
+
+    const unsigned char *bytes = data.bytes;
+    NSUInteger i = 0;
+    while (i < data.length) {
+        unsigned char c = bytes[i];
+        if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+            i++;
+            continue;
+        }
+        break;
+    }
+    if (i >= data.length || bytes[i] != '<') return NO;
+
+    NSUInteger probeLen = MIN((NSUInteger)64, data.length - i);
+    NSData *probeData = [NSData dataWithBytes:&bytes[i] length:probeLen];
+    NSString *probe = [[NSString alloc] initWithData:probeData encoding:NSASCIIStringEncoding].lowercaseString;
+    if (! probe.length) return NO;
+
+    return (
+        [probe hasPrefix:@"<!doctype html"] ||
+        [probe hasPrefix:@"<html"] ||
+        [probe hasPrefix:@"<head"] ||
+        [probe hasPrefix:@"<body"]
+    );
+}
+
 + (UIImage * _Nullable)fc_decodedImageFromData:(NSData * _Nonnull)data
 {
     return [self fc_decodedImageFromData:data resizedToMaxOutputDimension:0 maxSourceBytes:0 maxSourceDimension:0 onlyIfCommonSourceFormat:NO];
@@ -21,6 +49,7 @@
 {
     if (! data.length) return nil;
     if (maxSourceBytes > 0 && data.length > maxSourceBytes) return nil;
+    if (FCDataLooksLikeHTMLDocument(data)) return nil;
 
     CGImageSourceRef imageSource = CGImageSourceCreateWithData((__bridge CFDataRef) data, (__bridge CFDictionaryRef) @{
         ((__bridge NSString *) kCGImageSourceShouldCache) : @NO
