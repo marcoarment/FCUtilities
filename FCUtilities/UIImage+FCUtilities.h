@@ -13,9 +13,6 @@
 + (UIImage * _Nullable)fc_decodedImageFromData:(NSData * _Nonnull)data resizedToMaxOutputDimension:(int)outputDimension;
 + (UIImage * _Nullable)fc_decodedImageFromData:(NSData * _Nonnull)data resizedToMaxOutputDimension:(int)outputDimension maxSourceBytes:(int)maxSourceBytes maxSourceDimension:(int)maxSourceDimension onlyIfCommonSourceFormat:(BOOL)onlyIfCommonSourceFormat;
 
-- (void)fc_enumeratePixelsUsingBlock:(void (^ _Nonnull)(NSUInteger x, NSUInteger y, UInt8 r, UInt8 g, UInt8 b, UInt8 a))callback;
-- (float)fc_similarityToImageOfSameSize:(UIImage * _Nonnull)otherImage;
-
 // Masked images are resource images that you provide in black (or any color) on a transparent background.
 // Only their transparency values are used -- they're effectively just masks.
 //
